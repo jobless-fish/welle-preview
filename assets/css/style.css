@@ -441,10 +441,10 @@ details.privacy .terms { border: 0; border-top: 1px solid var(--line); height: 2
 @keyframes flow { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .flow__cta {
   display: table; margin: clamp(26px, 4vw, 40px) auto 0;
-  font: 400 15px/1 var(--serif); letter-spacing: .22em; text-transform: uppercase; color: var(--ink);
-  padding: 14px 4px 10px; border-bottom: 1px solid currentColor;
+  font: 400 clamp(22px, 6vw, 28px)/1 "Domine", var(--serif); letter-spacing: .04em; color: var(--ink);
+  padding: 10px 6px;
 }
-.flow__cta span { display: inline-block; transition: transform .3s ease; }
+.flow__cta span { display: inline-block; margin-left: .25em; font-size: .8em; transition: transform .3s ease; }
 .flow__cta:hover span { transform: translateX(5px); }
 @media (prefers-reduced-motion: reduce) { .flow__track { animation: none; } .flow { overflow-x: auto; } }
 
@@ -468,48 +468,18 @@ details.privacy .terms { border: 0; border-top: 1px solid var(--line); height: 2
     opacity: 0; transition: opacity .55s ease; cursor: pointer;
   }
   .flow__stage:hover .flow__hover, .flow__hover:focus-visible { opacity: 1; }
-  /* GALLERY 버튼 — 뉴모피즘 + 유리(반투명·프리즘 테두리·반사광) */
+  /* 'Gallery' 글자만 — 버튼 모양 없이 Domine 서체로 */
   .flow__label {
-    position: relative; z-index: 1; overflow: hidden; isolation: isolate;
-    font: 400 clamp(20px, 2.3vw, 30px)/1 var(--serif); letter-spacing: .32em; text-transform: uppercase; color: var(--ink);
-    padding: 20px 30px 18px 40px; border-radius: 999px;
-    background: linear-gradient(145deg, rgba(255,255,255,.66) 0%, rgba(240,246,251,.46) 55%, rgba(225,235,244,.4) 100%);
-    -webkit-backdrop-filter: blur(16px) saturate(160%); backdrop-filter: blur(16px) saturate(160%);
-    border: 1px solid rgba(255,255,255,.6);
-    box-shadow:
-      12px 14px 30px rgba(13,27,38,.16),         /* 오른쪽 아래 그림자 */
-      -10px -10px 26px rgba(255,255,255,.6),     /* 왼쪽 위 빛 */
-      inset 2px 2px 3px rgba(255,255,255,.9),    /* 안쪽 위 하이라이트 */
-      inset -4px -5px 10px rgba(13,27,38,.07);   /* 안쪽 아래 깊이 */
-    transform: translateY(6px);
-    transition: transform .55s ease, box-shadow .25s ease;
+    position: relative; z-index: 1;
+    font: 400 clamp(34px, 4vw, 58px)/1 "Domine", var(--serif); letter-spacing: .03em; color: var(--ink);
+    text-shadow: 0 0 24px rgba(255,255,255,.9), 0 0 6px rgba(255,255,255,.7);
+    transform: translateY(8px);
+    transition: transform .7s ease, opacity .3s ease;
   }
-  /* 프리즘 테두리: 은은한 무지갯빛 */
-  .flow__label::before {
-    content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; z-index: -1;
-    background: conic-gradient(from 200deg, rgba(255,190,210,.7), rgba(255,236,170,.7), rgba(180,240,215,.7), rgba(170,210,255,.75), rgba(215,185,255,.7), rgba(255,190,210,.7));
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor; mask-composite: exclude;
-    opacity: .75;
-  }
-  /* 표면 반사광: 천천히 지나감 */
-  .flow__label::after {
-    content: ""; position: absolute; top: -40%; bottom: -40%; left: -60%; width: 45%; z-index: -1;
-    background: linear-gradient(100deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.75) 48%, rgba(255,255,255,0) 100%);
-    transform: skewX(-18deg);
-    animation: glassShine 4.8s ease-in-out infinite;
-  }
-  @keyframes glassShine { 0%, 55% { left: -60%; } 100% { left: 130%; } }
   .flow__stage:hover .flow__label { transform: translateY(0); }
-  .flow__hover:active .flow__label {
-    transform: translateY(1px) scale(.985);
-    box-shadow:
-      3px 4px 10px rgba(13,27,38,.12), -3px -3px 8px rgba(255,255,255,.5),
-      inset 4px 5px 10px rgba(13,27,38,.12), inset -3px -3px 6px rgba(255,255,255,.85);
-  }
-  .flow__label span { display: inline-block; transition: transform .3s ease; }
-  .flow__hover:hover .flow__label > span { transform: translateX(6px); }
-  @media (prefers-reduced-motion: reduce) { .flow__label::after { animation: none; opacity: 0; } }
+  .flow__hover:active .flow__label { opacity: .7; }
+  .flow__label span { display: inline-block; margin-left: .22em; font-size: .72em; transition: transform .4s ease; }
+  .flow__hover:hover .flow__label > span { transform: translateX(8px); }
   .flow__ripple { position: absolute; inset: 56px 0; width: 100%; height: calc(100% - 112px); pointer-events: none; image-rendering: auto; filter: blur(3px); }
   .flow__cta { display: none; }   /* PC는 마우스를 올리면 뜨는 표시로 대신 */
 }
@@ -555,11 +525,7 @@ html.page-fade body { animation: pageFade .7s ease both; }
 }
 .page-reveal.is-go { animation: waterReveal 1.9s cubic-bezier(.4, 0, .3, 1) forwards; }
 html.is-leaving, html.is-leaving * { cursor: progress !important; }
-html.is-leaving .flow__label {   /* 불러오는 동안 버튼이 눌린 상태로 */
-  transform: translateY(1px) scale(.985);
-  box-shadow: 3px 4px 10px rgba(13,27,38,.12), -3px -3px 8px rgba(255,255,255,.5),
-    inset 4px 5px 10px rgba(13,27,38,.12), inset -3px -3px 6px rgba(255,255,255,.85);
-}
+html.is-leaving .flow__label { opacity: .7; }   /* 불러오는 동안 살짝 눌린 느낌 */
 
 /* ============================================================
    갤러리 — 왼쪽 큰 칸(사진 디졸브) + 오른쪽 8칸 (스크롤 없이 한 화면)
