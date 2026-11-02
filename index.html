@@ -152,6 +152,7 @@
   /* ---------- 오버레이 ---------- */
   var wrap = document.createElement('div');
   wrap.setAttribute('aria-hidden', 'true');
+  wrap.className = 'ink-intro';
   wrap.style.cssText =
     // 아이폰 사파리는 하단 주소창 아래까지 페이지를 그림 → 가장 큰 화면 높이(lvh)로 끝까지 덮음
     'position:fixed;left:0;right:0;top:0;width:100%;height:100vh;height:100lvh;min-height:100%;' +
@@ -172,6 +173,23 @@
     window.__inkIntroActive = false;
     emit('inkintro:done');
   }
+  /* 아이폰 사파리처럼 하단 주소창 아래가 덮이지 않는 경우를 대비해
+     인트로가 떠 있는 동안 뒤 페이지를 감추고 바탕을 물빛으로 칠해 둠 */
+  var hideStyle = document.createElement('style');
+  hideStyle.textContent =
+    'html.ink-intro-on,html.ink-intro-on body{background:' + CONFIG.waterBottom + '!important}' +
+    'html.ink-intro-on body>*:not(.ink-intro){opacity:0!important}' +
+    'html.ink-intro-fade body>*:not(.ink-intro){transition:opacity 1.2s ease!important}';
+  (document.head || document.documentElement).appendChild(hideStyle);
+  document.documentElement.classList.add('ink-intro-on');
+  function showPage() {      // 잉크가 걷히기 시작하면 페이지를 부드럽게 다시 보여줌
+    var r = document.documentElement;
+    if (!r.classList.contains('ink-intro-on')) return;
+    r.classList.add('ink-intro-fade');
+    r.classList.remove('ink-intro-on');
+    setTimeout(function () { r.classList.remove('ink-intro-fade'); }, 1300);
+  }
+  window.addEventListener('inkintro:reveal', showPage);
   function mount() {
     document.body.appendChild(wrap);
     prevOverflow = document.documentElement.style.overflow;
@@ -226,6 +244,7 @@
     evs.forEach(function (n) { window.removeEventListener(n, onInput); });
     if (CONFIG.redirectUrl) { try { sessionStorage.setItem('inkIntroSeen', '1'); } catch (e) {} go(); return; }
     unlock();
+    showPage();
     if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
     try { sessionStorage.setItem('inkIntroSeen', '1'); } catch (e) {}
     if (gl) { var ext = gl.getExtension('WEBGL_lose_context'); if (ext) ext.loseContext(); }
