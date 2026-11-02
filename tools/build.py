@@ -287,3 +287,9 @@ reservation_body = f"""
   </section>
 </div>"""
 write("reservation.html", page("Reservation", "Reservation", reservation_body))
+
+# ---------- 갤러리 시안 비교 페이지 ----------
+from gallery_ideas import build as build_ideas  # noqa: E402
+_ideas_body, _ideas_css, _ideas_js = build_ideas(albums, UP)
+write("gallery-ideas.html", page("Gallery 시안", "Gallery", _ideas_body,
+                                 extra_head=_ideas_css, extra_body=_ideas_js))
