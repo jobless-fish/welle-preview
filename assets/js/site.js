@@ -76,7 +76,7 @@
     if (!raw) { document.documentElement.classList.remove('water-in'); return; }
     var pos = { x: .5, y: .5 };
     try { pos = JSON.parse(raw); } catch (e) {}
-    waterVeil('in', pos.x, pos.y, 1300);
+    waterVeil('in', pos.x, pos.y, 1700);
   })();
 
   // 뒤로가기로 돌아왔을 때(페이지가 그대로 복원된 경우) 덮여 있던 물을 치움
@@ -87,16 +87,24 @@
     }
   });
 
-  // 나갈 때: data-water 링크를 누르면 누른 자리에서 물결이 화면을 덮은 뒤 이동
+  // 나갈 때: data-water 링크를 누르면 바로 이동하고, 다음 페이지가 누른 자리에서부터 물결로 드러남 (전환 한 번)
   document.addEventListener('click', function (e) {
     var a = e.target.closest && e.target.closest('a[data-water]');
     if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    e.preventDefault();
     var x = e.clientX / window.innerWidth, y = 1 - e.clientY / window.innerHeight;
     if (!e.clientX && !e.clientY) { x = .5; y = .5; }
     try { sessionStorage.setItem('welleWater', JSON.stringify({ x: x, y: y })); } catch (err) {}
-    waterVeil('out', x, y, 1000, function () { window.location.href = a.href; });
+    // 기본 이동 그대로 진행
+  });
+  // 마우스를 올리면 다음 페이지를 미리 받아 둠 → 넘어가는 순간 빈틈이 줄어듦
+  var prefetched = {};
+  document.addEventListener('pointerover', function (e) {
+    var a = e.target.closest && e.target.closest('a[data-water]');
+    if (!a || prefetched[a.href]) return;
+    prefetched[a.href] = true;
+    var l = document.createElement('link'); l.rel = 'prefetch'; l.href = a.href;
+    document.head.appendChild(l);
   });
 
   /* 헤더: 스크롤하면 작아짐 */
