@@ -5,10 +5,19 @@ python3 tools/build.py 를 실행하면 루트에 HTML 페이지들이 만들어
 - 사진은 아임웹 이미지 서버에서 작은 크기로 불러옵니다 (?w=폭)
 - 앨범 데이터: _data/albums_part*.json
 """
-import json, html, pathlib
+import json, html, pathlib, hashlib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 from texts import TERMS, PRIVACY  # noqa: E402
+
+
+def ver(rel):
+    """파일 내용이 바뀌면 주소 뒤 ?v= 값도 바뀌어 브라우저가 새 파일을 받음"""
+    return hashlib.md5((ROOT / rel).read_bytes()).hexdigest()[:8]
+
+
+CSS_V = ver("assets/css/style.css")
+JS_V = ver("assets/js/site.js")
 
 UP = "https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/"
 THUMB = "https://cdn.imweb.me/thumbnail/20221028/"
@@ -62,7 +71,7 @@ def page(title, active, body, extra_head="", extra_body=""):
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdn-optimized.imweb.me">
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/style.css?v={CSS_V}">
 {extra_head}
 </head>
 <body>
@@ -85,7 +94,7 @@ def page(title, active, body, extra_head="", extra_body=""):
   <div class="copy">© 2021 Welle Fotografien All Rights Reserved.</div>
 </footer>
 <div class="toast" role="status" aria-live="polite"></div>
-<script src="assets/js/site.js"></script>
+<script src="assets/js/site.js?v={JS_V}"></script>
 {extra_body}
 </body>
 </html>
