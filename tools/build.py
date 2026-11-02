@@ -72,6 +72,7 @@ def page(title, active, body, extra_head="", extra_body=""):
     <nav class="nav" aria-label="주 메뉴">{nav}</nav>
   </div>
 </header>
+<div class="header-space" aria-hidden="true"></div>
 <main>
 {body}
 </main>

@@ -3,9 +3,36 @@
   /* 헤더: 스크롤하면 작아짐 */
   var header = document.querySelector('.site-header');
   if (header) {
-    var onScroll = function () { header.classList.toggle('is-scrolled', window.scrollY > 40); };
+    var root = document.documentElement;
+    var scrolled = false, ticking = false;
+
+    // 펼쳐진 상태의 헤더 높이를 재서 그만큼 자리를 확보
+    var measure = function () {
+      var was = header.classList.contains('is-scrolled');
+      header.style.transition = 'none';
+      header.querySelectorAll('*').forEach(function (el) { el.style.transition = 'none'; });
+      header.classList.remove('is-scrolled');
+      root.style.setProperty('--header-h', header.offsetHeight + 'px');
+      if (was) header.classList.add('is-scrolled');
+      void header.offsetHeight;
+      header.style.transition = '';
+      header.querySelectorAll('*').forEach(function (el) { el.style.transition = ''; });
+    };
+
+    // 줄어드는 기준(80px)과 다시 커지는 기준(20px)을 다르게 해서 경계에서 깜빡이지 않게
+    var update = function () {
+      ticking = false;
+      var y = window.scrollY;
+      if (!scrolled && y > 80) { scrolled = true; header.classList.add('is-scrolled'); }
+      else if (scrolled && y < 20) { scrolled = false; header.classList.remove('is-scrolled'); }
+    };
+    var onScroll = function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+
+    measure();
+    window.addEventListener('resize', measure);
+    window.addEventListener('load', measure);
     window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
+    update();
   }
 
   /* 이미지가 로드되면 부드럽게 나타나기 */

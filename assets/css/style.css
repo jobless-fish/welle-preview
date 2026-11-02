@@ -32,8 +32,11 @@ a { color: inherit; text-decoration: none; }
 button { font: inherit; }
 
 /* ---------- 헤더 ---------- */
+/* 헤더는 화면에 고정하고, 원래 높이만큼 자리를 비워 둠.
+   (헤더가 작아져도 페이지 높이가 변하지 않아 스크롤이 튀지 않음) */
+.header-space { height: var(--header-h, 190px); }
 .site-header {
-  position: sticky; top: 0; z-index: 50;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 50;
   background: rgba(255,255,255,.94);
   backdrop-filter: saturate(140%) blur(8px);
   -webkit-backdrop-filter: saturate(140%) blur(8px);
