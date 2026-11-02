@@ -585,34 +585,12 @@ html.is-leaving .flow__label {   /* 불러오는 동안 버튼이 눌린 상태�
 .gx__title { display: block; font: 400 clamp(30px, 3.6vw, 52px)/1.05 var(--serif); letter-spacing: .02em; text-shadow: 0 1px 14px rgba(0,0,0,.3); }
 .gx__count { display: block; margin-top: 8px; font: 400 13px/1 var(--serif); letter-spacing: .16em; text-transform: uppercase; opacity: .85; }
 .gx__big.is-swapping .gx__meta { opacity: 0; transform: translateY(8px); }
-/* 마우스를 올리면 '사진 전체보기' */
-.gx__veil {
-  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  background: rgba(255,255,255,.12);
-  -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
-  opacity: 0; transition: opacity .45s ease;
-}
-.gx__all {
-  position: relative; overflow: hidden; isolation: isolate;
-  font: 400 clamp(16px, 1.5vw, 20px)/1 var(--sans); font-weight: 500; letter-spacing: .08em; color: var(--ink);
-  padding: 18px 30px; border-radius: 999px;
-  background: linear-gradient(145deg, rgba(255,255,255,.7), rgba(235,243,250,.5));
-  -webkit-backdrop-filter: blur(16px) saturate(160%); backdrop-filter: blur(16px) saturate(160%);
-  border: 1px solid rgba(255,255,255,.65);
-  box-shadow: 10px 12px 28px rgba(13,27,38,.18), -8px -8px 22px rgba(255,255,255,.35),
-    inset 2px 2px 3px rgba(255,255,255,.9), inset -4px -5px 10px rgba(13,27,38,.07);
-  transform: translateY(6px); transition: transform .45s ease;
-}
-.gx__all span { display: inline-block; transition: transform .3s ease; }
+/* 마우스를 올리면: 사진이 살짝 확대되고 아래가 조금 어두워짐 (큰 칸 전체가 앨범 링크) */
+.gx__stage { transition: transform .9s ease; }
+.gx__shade { transition: height .5s ease, background .5s ease; }
 @media (hover: hover) and (pointer: fine) {
-  .gx__big:hover .gx__veil, .gx__big:focus-visible .gx__veil { opacity: 1; }
-  .gx__big:hover .gx__all { transform: translateY(0); }
-  .gx__big:hover .gx__all span { transform: translateX(5px); }
-}
-@media (hover: none), (pointer: coarse) {
-  /* 터치 기기: 버튼을 오른쪽 아래에 작게 늘 표시 */
-  .gx__veil { opacity: 1; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; align-items: flex-end; justify-content: flex-end; padding: 14px; }
-  .gx__all { transform: none; font-size: 13px; padding: 11px 16px; }
+  .gx__big:hover .gx__stage { transform: scale(1.025); }
+  .gx__big:hover .gx__shade { height: 60%; background: linear-gradient(transparent, rgba(0,0,0,.5)); }
 }
 
 /* 오른쪽 8칸 */

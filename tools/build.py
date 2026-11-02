@@ -82,7 +82,7 @@ def page(title, active, body, extra_head="", extra_body="", body_class=""):
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdn-optimized.imweb.me">
-<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&family=Noto+Serif+KR:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/style.css?v={CSS_V}">
 <script>
 /* 이전 페이지에서 data-water 링크로 왔으면: 누른 위치를 전환 효과에 넘김 */
@@ -188,7 +188,6 @@ write("gallery.html", page("Gallery", "Gallery", f"""
     <div class="gx__stage"></div>
     <div class="gx__shade" aria-hidden="true"></div>
     <div class="gx__meta"><span class="gx__title">{html.escape(first['title'])}</span><span class="gx__count">{len(first['photos'])} photos</span></div>
-    <div class="gx__veil"><span class="gx__all">사진 전체보기 <span aria-hidden="true">→</span></span></div>
   </a>
   <div class="gx__grid">{gx_tiles}
   </div>
