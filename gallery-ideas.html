@@ -58,22 +58,40 @@
   .idx .thumbs img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; object-position: 50% 30%; background: var(--paper-2); }
 }
 
-/* ---------- B. 필름 스트립 ---------- */
-.strips { padding-bottom: clamp(56px, 8vw, 96px); }
-.strip { margin: 0 0 clamp(36px, 5vw, 56px); }
+/* ---------- B. 필름 스트립 (차분한 버전) ---------- */
+.strips { max-width: 1120px; margin: 0 auto; padding: 0 var(--gutter) clamp(56px, 8vw, 96px); }
+.strip { display: grid; grid-template-columns: 220px 1fr; gap: 32px; align-items: center;
+  padding: 34px 0; border-top: 1px solid var(--line); }
+.strip:last-child { border-bottom: 1px solid var(--line); }
 .strip[hidden] { display: none; }
-.strip__head { max-width: var(--max); margin: 0 auto 14px; padding: 0 var(--gutter);
-  display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
-.strip__head h3 { margin: 0; font: 400 clamp(22px, 3vw, 30px)/1.1 var(--serif); color: var(--ink); letter-spacing: .02em; }
-.strip__head h3 small { font: 400 12px/1 var(--sans); color: var(--muted); margin-left: 10px; letter-spacing: 0; }
-.strip__head a { font: 400 13px/1 var(--serif); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
-.strip__head a:hover { color: var(--ink); }
-.strip__row { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity;
-  padding: 0 var(--gutter) 10px; scroll-padding: 0 var(--gutter); scrollbar-width: thin; }
-.strip__row a { flex: none; scroll-snap-align: start; background: var(--paper-2); }
-.strip__row img { height: clamp(220px, 34vw, 380px); width: auto; display: block; }
-.strip__row .more { display: flex; align-items: center; justify-content: center; width: clamp(120px, 16vw, 180px);
-  border: 1px solid var(--line); background: #fff; font: 400 14px/1.4 var(--serif); letter-spacing: .1em; color: var(--ink); text-align: center; }
+.strip__head h3 { margin: 0; font: 400 26px/1.15 var(--serif); color: var(--ink); letter-spacing: .02em; }
+.strip__head .meta { display: block; margin-top: 8px; font-size: 12px; color: var(--muted); }
+.strip__head a { display: inline-block; margin-top: 18px; font: 400 12px/1 var(--serif); letter-spacing: .16em;
+  text-transform: uppercase; color: var(--ink); border-bottom: 1px solid currentColor; padding-bottom: 3px; }
+.strip__head a:hover { opacity: .6; }
+/* PC: 스크롤 없이 한 줄, 오른쪽 끝은 흐리게 */
+.strip__row { display: flex; gap: 8px; height: 230px; overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, #000 82%, transparent);
+          mask-image: linear-gradient(to right, #000 82%, transparent); }
+.strip__row a { flex: none; height: 100%; background: var(--paper-2); }
+.strip__row img { height: 100%; width: auto; display: block; transition: opacity .3s; }
+.strip__row a:hover img { opacity: .85; }
+.strip__row .more { display: none; }
+@media (max-width: 760px) {
+  .strips { padding: 0 0 56px; }
+  .strip { grid-template-columns: 1fr; gap: 14px; padding: 28px 0; }
+  .strip__head { padding: 0 var(--gutter); display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .strip__head h3 { font-size: 22px; }
+  .strip__head .meta { display: inline; margin: 0 0 0 8px; }
+  .strip__head a { margin-top: 0; white-space: nowrap; }
+  /* 모바일: 가로로 넘기기, 작고 적게 */
+  .strip__row { height: 190px; overflow-x: auto; scroll-snap-type: x proximity; padding: 0 var(--gutter);
+    scroll-padding: 0 var(--gutter); scrollbar-width: none; -webkit-mask-image: none; mask-image: none; }
+  .strip__row::-webkit-scrollbar { display: none; }
+  .strip__row a { scroll-snap-align: start; }
+  .strip__row .more { display: flex; align-items: center; justify-content: center; width: 96px;
+    border: 1px solid var(--line); background: #fff; font: 400 13px/1.4 var(--serif); letter-spacing: .1em; color: var(--ink); text-align: center; }
+}
 
 /* ---------- C. 모자이크 ---------- */
 .mosaic { max-width: 1400px; margin: 0 auto; padding: 0 var(--gutter) clamp(56px, 8vw, 96px);
@@ -129,8 +147,8 @@
   <div class="idea-intro">
     <span class="eyebrow">Idea B</span>
     <h2>앨범마다 한 줄씩, 필름 스트립</h2>
-    <p>앨범 하나가 가로로 넘기는 한 줄이에요. 클릭하지 않아도 한 페이지에서 모든 예식의 분위기를 훑어볼 수 있고,
-       사진을 원래 비율 그대로 보여줘서 잘리는 곳이 없어요. 위쪽 칩으로 본식·스튜디오·야외·데이트를 골라볼 수 있어요.</p>
+    <p>앨범마다 한 줄씩, 이름과 사진 몇 장만 차분하게 보여줘요. PC에서는 넘기지 않고 한 줄에 담고,
+       모바일에서는 작은 사진을 옆으로 넘겨봐요. 사진은 원래 비율 그대로라 잘리는 곳이 없어요.</p>
   </div>
   <div class="chips" id="chips-b"></div>
   <div class="strips" id="strips"></div>
@@ -219,13 +237,15 @@
   /* B. 필름 스트립 */
   var strips = document.getElementById('strips');
   strips.innerHTML = D.map(function (a) {
-    var row = a.photos.slice(0, 10).map(function (f) {
-      return '<a href="album-' + a.id + '.html"><img src="' + img(f, 600) + '" alt="" loading="lazy"></a>';
+    var shown = 6;
+    var row = a.photos.slice(0, shown).map(function (f) {
+      return '<a href="album-' + a.id + '.html"><img src="' + img(f, 500) + '" alt="" loading="lazy"></a>';
     }).join('');
+    var rest = Math.max(0, a.photos.length - shown);
     return '<section class="strip" data-cat="' + esc(a.cat) + '">' +
-      '<div class="strip__head"><h3>' + esc(a.title) + '<small>' + esc(a.cat) + ' · ' + a.photos.length + '</small></h3>' +
-      '<a href="album-' + a.id + '.html">View all →</a></div>' +
-      '<div class="strip__row">' + row + '<a class="more" href="album-' + a.id + '.html">+' + Math.max(0, a.photos.length - 10) + '<br>more</a></div></section>';
+      '<div class="strip__head"><div><h3>' + esc(a.title) + '</h3><span class="meta">' + esc(a.cat) + ' · ' + a.photos.length + ' photos</span></div>' +
+      '<a href="album-' + a.id + '.html">View all</a></div>' +
+      '<div class="strip__row">' + row + (rest ? '<a class="more" href="album-' + a.id + '.html">+' + rest + '<br>more</a>' : '') + '</div></section>';
   }).join('');
   chips(document.getElementById('chips-b'), function (c) {
     strips.querySelectorAll('.strip').forEach(function (s) { s.hidden = !(c === '전체' || s.dataset.cat === c); });
