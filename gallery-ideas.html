@@ -180,7 +180,9 @@
 
   /* 탭 고정 위치를 줄어든 헤더 높이에 맞춤 */
   var hdr = document.querySelector('.site-header');
-  function setTop() { document.documentElement.style.setProperty('--header-shrunk', hdr.offsetHeight + 'px'); }
+  function setTop() { document.documentElement.style.setProperty('--header-shrunk', hdr.getBoundingClientRect().height + 'px'); }
+  if (window.ResizeObserver) new ResizeObserver(setTop).observe(hdr);
+  hdr.addEventListener('transitionend', setTop);
   window.addEventListener('scroll', setTop, { passive: true }); setTop();
 
   /* A. 인덱스 */
