@@ -315,59 +315,113 @@
     render();
   }
 
-  /* 홈 갤러리 띠: 마우스를 올리면 블러 막 위에 물결이 퍼짐 */
+  /* 홈 갤러리 띠: 마우스를 올리면 인트로처럼 물결이 퍼짐
+     - 높이장(물결)을 계산해서
+       ① 흐르는 사진 자체를 SVG 변위 필터로 실제로 일렁이게 하고
+       ② 블러 막 위에 수면의 빛·그늘을 칠함 */
   (function () {
     var hov = document.querySelector('.flow__hover');
-    if (!hov || !window.matchMedia || !matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-    var cv = hov.querySelector('.flow__ripple'), ctx = cv.getContext('2d');
-    var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var rips = [], running = false, inside = false, last = null, dpr = 1;
-    function size() {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      var r = hov.getBoundingClientRect();
-      cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
+    var stage = document.querySelector('.flow__stage');
+    var track = document.querySelector('.flow__track');
+    if (!hov || !stage || !track || !window.matchMedia || !matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var NS = 'http://www.w3.org/2000/svg', XL = 'http://www.w3.org/1999/xlink';
+    var host = document.createElementNS(NS, 'svg');
+    host.setAttribute('width', '0'); host.setAttribute('height', '0'); host.setAttribute('aria-hidden', 'true');
+    host.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden';
+    host.innerHTML =
+      '<filter id="flow-ripple" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" color-interpolation-filters="sRGB">' +
+        '<feFlood flood-color="rgb(128,128,128)" result="flat"/>' +
+        '<feImage result="map0" preserveAspectRatio="none"/>' +
+        '<feMerge result="map"><feMergeNode in="flat"/><feMergeNode in="map0"/></feMerge>' +
+        '<feDisplacementMap in="SourceGraphic" in2="map" scale="34" xChannelSelector="R" yChannelSelector="G"/>' +
+      '</filter>';
+    document.body.appendChild(host);
+    var filt = host.querySelector('filter'), feImg = host.querySelector('feImage'), feDisp = host.querySelector('feDisplacementMap');
+
+    var shade = hov.querySelector('.flow__ripple'), sctx = shade.getContext('2d');
+    var map = document.createElement('canvas'), mctx = map.getContext('2d');
+    var CELL = 5, gw = 0, gh = 0, hgt = null, mImg = null, sImg = null;
+    var rips = [], running = false, last = null;
+
+    function setup() {
+      var r = stage.getBoundingClientRect();
+      gw = Math.max(40, Math.round(r.width / CELL)); gh = Math.max(12, Math.round(r.height / CELL));
+      map.width = shade.width = gw; map.height = shade.height = gh;
+      hgt = new Float32Array(gw * gh);
+      mImg = mctx.createImageData(gw, gh); sImg = sctx.createImageData(gw, gh);
     }
     function add(x, y, s) {
-      rips.push({ x: x, y: y, t: performance.now(), s: s });
-      if (rips.length > 28) rips.shift();
-      if (!running) { running = true; requestAnimationFrame(draw); }
+      rips.push({ x: x / CELL, y: y / CELL, t: performance.now(), s: s });
+      if (rips.length > 14) rips.shift();
+      if (!running) { running = true; requestAnimationFrame(step); }
     }
-    function draw(now) {
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, cv.width, cv.height);
-      var LIFE = 1600;
+    var LIFE = 2200, SPEED = 0.035, WL = 5.2;   // 수명(ms), 퍼지는 속도(칸/ms), 물결 간격(칸)
+    function step(now) {
       rips = rips.filter(function (r) { return now - r.t < LIFE; });
+      if (!rips.length) {
+        running = false; track.style.filter = ''; sctx.clearRect(0, 0, gw, gh);
+        return;
+      }
+      // 1) 물결 높이 계산 — 퍼져 나가는 고리 모양의 물결 묶음
+      var i, x, y, k;
+      for (i = 0; i < hgt.length; i++) hgt[i] = 0;
       rips.forEach(function (r) {
-        var a = (now - r.t) / LIFE, k = Math.pow(1 - a, 1.6) * r.s;
-        var rad = 10 + a * 170;
-        // 빛이 맺힌 물결 테두리 + 바깥 번짐 + 안쪽 그늘 → 물방울이 떨어진 수면처럼
-        ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(255,255,255,' + (0.22 * k).toFixed(3) + ')';
-        ctx.beginPath(); ctx.arc(r.x, r.y, rad + 6, 0, Math.PI * 2); ctx.stroke();
-        ctx.lineWidth = 1.8; ctx.strokeStyle = 'rgba(255,255,255,' + (0.75 * k).toFixed(3) + ')';
-        ctx.beginPath(); ctx.arc(r.x, r.y, rad, 0, Math.PI * 2); ctx.stroke();
-        ctx.lineWidth = 2.5; ctx.strokeStyle = 'rgba(20,35,50,' + (0.12 * k).toFixed(3) + ')';
-        ctx.beginPath(); ctx.arc(r.x, r.y, Math.max(0, rad - 5), 0, Math.PI * 2); ctx.stroke();
-        if (a < 0.5) {   // 두 번째 잔물결
-          var r2 = Math.max(0, rad * 0.55);
-          ctx.lineWidth = 1.2; ctx.strokeStyle = 'rgba(255,255,255,' + (0.45 * k).toFixed(3) + ')';
-          ctx.beginPath(); ctx.arc(r.x, r.y, r2, 0, Math.PI * 2); ctx.stroke();
+        var age = now - r.t, front = 2 + age * SPEED, fade = Math.pow(1 - age / LIFE, 1.4) * r.s;
+        var reach = front + WL * 2.2;
+        var x0 = Math.max(0, Math.floor(r.x - reach)), x1 = Math.min(gw - 1, Math.ceil(r.x + reach));
+        var y0 = Math.max(0, Math.floor(r.y - reach)), y1 = Math.min(gh - 1, Math.ceil(r.y + reach));
+        for (y = y0; y <= y1; y++) for (x = x0; x <= x1; x++) {
+          var d = Math.hypot(x - r.x, y - r.y), q = (d - front) / WL;
+          if (q < -2.4 || q > 2.4) continue;
+          hgt[y * gw + x] += Math.sin(q * Math.PI * 1.6) * Math.exp(-q * q * 0.9) * fade;
         }
       });
-      if (rips.length) requestAnimationFrame(draw); else { running = false; ctx.clearRect(0, 0, cv.width, cv.height); }
+      // 2) 기울기 → 변위 지도(사진 굴절) + 수면의 빛·그늘
+      var md = mImg.data, sd = sImg.data;
+      for (y = 0; y < gh; y++) for (x = 0; x < gw; x++) {
+        k = y * gw + x;
+        var gx = hgt[y * gw + Math.min(gw - 1, x + 1)] - hgt[y * gw + Math.max(0, x - 1)];
+        var gy = hgt[Math.min(gh - 1, y + 1) * gw + x] - hgt[Math.max(0, y - 1) * gw + x];
+        var p = k * 4;
+        md[p] = Math.max(0, Math.min(255, 128 + gx * 150));
+        md[p + 1] = Math.max(0, Math.min(255, 128 + gy * 150));
+        md[p + 2] = 128; md[p + 3] = 255;
+        var light = -gx * 0.55 - gy * 0.85;          // 왼쪽 위에서 비추는 빛
+        if (light > 0) { sd[p] = sd[p + 1] = sd[p + 2] = 255; sd[p + 3] = Math.min(150, light * 260); }
+        else { sd[p] = 20; sd[p + 1] = 35; sd[p + 2] = 50; sd[p + 3] = Math.min(70, -light * 120); }
+      }
+      sctx.putImageData(sImg, 0, 0);
+      mctx.putImageData(mImg, 0, 0);
+
+      // 3) 지도를 흐르는 사진 띠 좌표에 맞춰 붙임 (띠는 계속 움직이므로 매번 위치 계산)
+      var sr = stage.getBoundingClientRect(), tr = track.getBoundingClientRect();
+      var ox = sr.left - tr.left, oy = sr.top - tr.top;
+      filt.setAttribute('x', ox); filt.setAttribute('y', oy);
+      filt.setAttribute('width', sr.width); filt.setAttribute('height', sr.height);
+      feImg.setAttribute('x', ox); feImg.setAttribute('y', oy);
+      feImg.setAttribute('width', sr.width); feImg.setAttribute('height', sr.height);
+      var url = map.toDataURL('image/png');
+      feImg.setAttribute('href', url); feImg.setAttributeNS(XL, 'href', url);
+      if (!track.style.filter) track.style.filter = 'url(#flow-ripple)';
+
+      requestAnimationFrame(step);
     }
-    hov.addEventListener('mouseenter', function (e) { inside = true; size(); last = null; });
-    hov.addEventListener('mouseleave', function () { inside = false; });
+
+    hov.addEventListener('mouseenter', function () { setup(); last = null; });
     hov.addEventListener('mousemove', function (e) {
-      if (still) return;
-      var r = hov.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
-      if (last && Math.hypot(x - last.x, y - last.y) < 26) return;
+      if (!hgt) setup();
+      var r = stage.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+      if (last && Math.hypot(x - last.x, y - last.y) < 34) return;
       last = { x: x, y: y };
-      add(x, y, 0.75);
+      add(x, y, 0.8);
     });
     hov.addEventListener('mousedown', function (e) {
-      var r = hov.getBoundingClientRect(); add(e.clientX - r.left, e.clientY - r.top, 1.2);
+      if (!hgt) setup();
+      var r = stage.getBoundingClientRect(); add(e.clientX - r.left, e.clientY - r.top, 1.3);
     });
-    window.addEventListener('resize', function () { if (inside) size(); });
+    window.addEventListener('resize', function () { if (running) setup(); });
   })();
 
   /* 라이트박스 */
