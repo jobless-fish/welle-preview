@@ -471,8 +471,8 @@ details.privacy .terms { border: 0; border-top: 1px solid var(--line); height: 2
   /* 'Gallery' 글자만 — 버튼 모양 없이 Domine 서체로 */
   .flow__label {
     position: relative; z-index: 1;
-    font: 400 clamp(34px, 4vw, 58px)/1 "Domine", var(--serif); letter-spacing: .03em; color: var(--ink);
-    text-shadow: 0 0 24px rgba(255,255,255,.9), 0 0 6px rgba(255,255,255,.7);
+    font: 400 clamp(34px, 4vw, 58px)/1 "Domine", var(--serif); letter-spacing: .03em; color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,.45), 0 4px 22px rgba(0,0,0,.35);
     transform: translateY(8px);
     transition: transform .7s ease, opacity .3s ease;
   }
