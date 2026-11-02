@@ -138,7 +138,6 @@ home_body = f"""
 <section class="hero" aria-label="대표 사진">
   {''.join(slides)}
   <div class="hero__shade" aria-hidden="true"></div>
-  <svg class="hero__wave" viewBox="0 0 1000 90" preserveAspectRatio="none" aria-hidden="true"><path d=""/></svg>
   <button class="hero__cue" type="button">Scroll</button>
   <div class="hero__dots"></div>
 </section>

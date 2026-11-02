@@ -23,9 +23,11 @@
     var update = function () {
       ticking = false;
       var y = window.scrollY;
-      if (document.body.classList.contains('is-immersed')) y = 0;
-      if (!scrolled && y > 80) { scrolled = true; header.classList.add('is-scrolled'); }
-      else if (scrolled && y < 20) { scrolled = false; header.classList.remove('is-scrolled'); }
+      var home = document.body.classList.contains('home');
+      var full = parseFloat(getComputedStyle(root).getPropertyValue('--header-h')) || 190;
+      var down = home ? full + 60 : 80, up = home ? full + 10 : 20;   // 홈은 물결이 다 덮인 뒤부터 줄어듦
+      if (!scrolled && y > down) { scrolled = true; header.classList.add('is-scrolled'); }
+      else if (scrolled && y < up) { scrolled = false; header.classList.remove('is-scrolled'); }
     };
     var onScroll = function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
 
@@ -158,101 +160,83 @@
 
   function immersive() {
     var body = document.body, root = document.documentElement;
-    var wave = hero.querySelector('.hero__wave'), wavePath = wave && wave.querySelector('path');
-    var DUR = 1300, busy = false, lastToggle = 0;
-    var immersed = window.scrollY < 5;
+    var header = document.querySelector('.site-header');
+    var logoImg = header.querySelector('.logo img');
+    var navLinks = header.querySelectorAll('.nav a');
+    var shade = hero.querySelector('.hero__shade');
+    var cue = hero.querySelector('.hero__cue');
 
-    function headerH() { return parseFloat(getComputedStyle(root).getPropertyValue('--header-h')) || 190; }
+    // 헤더 뒤에 깔리는 흰 물결 (스크롤한 만큼 위에서부터 차오름)
+    var NS = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('class', 'hdr-wave');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('preserveAspectRatio', 'none');
+    var path = document.createElementNS(NS, 'path');
+    svg.appendChild(path);
+    header.insertBefore(svg, header.firstChild);
+
+    function headerFull() { return parseFloat(getComputedStyle(root).getPropertyValue('--header-h')) || 190; }
     function sizeHero() {
       var w = root.clientWidth, h = w * 2 / 3;
-      if (window.innerWidth > 760) h = Math.min(h, window.innerHeight - headerH() + 40);
+      if (window.innerWidth > 760) h = Math.min(h, window.innerHeight - headerFull() + 40);
       root.style.setProperty('--hero-h', Math.round(h) + 'px');
     }
     sizeHero();
-    window.addEventListener('resize', sizeHero);
-    window.addEventListener('load', sizeHero);
-    // 처음 자리 잡을 때는 움직이지 않게 (애니메이션은 그 다음부터)
-    hero.style.transition = 'none';
     body.classList.add('js-hero');
 
-    // 스크롤바를 숨겼다 보였다 하면 화면 폭이 바뀌며 툭 끊김 →
-    // 스크롤바는 그대로 두고, 몰입 화면·전환 중에는 스크롤 동작만 막음
-    var held = false;
-    function lock(on) { held = on; }
-    if (immersed) { body.classList.add('is-immersed'); lock(true); }
-    void hero.offsetHeight;
-    requestAnimationFrame(function () { requestAnimationFrame(function () { hero.style.transition = ''; }); });
-    // 인트로가 끝나며 스크롤을 풀어도, 몰입 화면이면 다시 잠금
-    window.addEventListener('inkintro:done', function () { if (immersed) lock(true); });
-    function hold() { return held || busy; }
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    var last = -1, ticking = false;
 
-    // 사진 윗부분이 물결처럼 출렁이며 걷히는 효과
-    function animateWave() {
-      if (!wavePath) return;
-      var t0 = performance.now();
-      (function step(now) {
-        var t = Math.min((now - t0) / DUR, 1);
-        var W = wave.clientWidth || 1000, H = 90;
-        var amp = Math.sin(Math.PI * t) * (W < 700 ? 26 : 42);
-        var ph = t * 7;
-        var d = 'M0,0 H' + W + ' ';
-        for (var x = W; x >= 0; x -= W / 48) {
-          var y = amp * (0.55 + 0.3 * Math.sin(x / W * Math.PI * 3.2 + ph) + 0.15 * Math.sin(x / W * Math.PI * 7.4 - ph * 1.7));
-          d += 'L' + x.toFixed(1) + ',' + Math.max(0, y).toFixed(1) + ' ';
-        }
-        wave.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
-        wavePath.setAttribute('d', d + 'Z');
-        if (t < 1) requestAnimationFrame(step); else wavePath.setAttribute('d', '');
-      })(t0);
+    function render() {
+      ticking = false;
+      var H = headerFull();                       // 펼쳐진 헤더 높이 = 전환이 끝나는 스크롤 거리
+      var y = Math.max(0, window.scrollY);
+      var p = Math.min(1, y / H);                 // 0 = 사진 꽉 참, 1 = 흰 헤더
+      var e = p * p * (3 - 2 * p);                // 부드러운 곡선
+
+      // 사진 윗부분을 헤더 뒤까지 늘림: 스크롤해도 사진 윗변은 화면 맨 위에 붙어 있다가 p=1 에서 원래 자리로
+      hero.style.setProperty('--ext', (H * (1 - p)).toFixed(1) + 'px');
+
+      // 흰 물결: 아래 경계가 0 → 헤더 높이까지 내려오며 출렁임 (중간에 가장 크게)
+      var W = header.clientWidth || root.clientWidth, Hc = header.offsetHeight;
+      var base = Hc * e;
+      var amp = Math.sin(Math.PI * p) * (W < 700 ? 24 : 40);
+      var ph = y * 0.018;
+      var d = 'M0,0 H' + W + ' ';
+      for (var x = W; x >= -0.1; x -= W / 48) {
+        var u = x / W;
+        var wv = 0.55 * Math.sin(u * Math.PI * 3.1 + ph) + 0.3 * Math.sin(u * Math.PI * 7.3 - ph * 1.6) + 0.15 * Math.sin(u * Math.PI * 13 + ph * 2.3);
+        d += 'L' + x.toFixed(1) + ',' + Math.max(0, base + amp * wv).toFixed(1) + ' ';
+      }
+      svg.setAttribute('viewBox', '0 0 ' + W + ' ' + (Hc + 90));
+      path.setAttribute('d', p <= 0 ? '' : d + 'Z');
+
+      // 로고·메뉴: 흰색 → 검정 (물결이 지나가는 타이밍에 맞춰)
+      var k = Math.min(1, Math.max(0, (e - 0.25) / 0.6));
+      logoImg.style.filter = 'brightness(0) invert(' + (1 - k).toFixed(3) + ') drop-shadow(0 1px 10px rgba(0,0,0,' + (0.28 * (1 - k)).toFixed(3) + '))';
+      var c = Math.round(lerp(255, 33, k));
+      navLinks.forEach(function (a) {
+        a.style.color = 'rgb(' + c + ',' + c + ',' + c + ')';
+        a.style.textShadow = '0 1px 10px rgba(0,0,0,' + (0.35 * (1 - k)).toFixed(3) + ')';
+      });
+
+      if (shade) shade.style.opacity = (1 - e).toFixed(3);
+      if (cue) {
+        var co = Math.max(0, 1 - p * 3);
+        cue.style.opacity = co.toFixed(3);
+        cue.style.pointerEvents = co > 0.3 ? 'auto' : 'none';
+      }
+      body.classList.toggle('is-top', p < 0.02);
     }
+    function schedule() { if (!ticking) { ticking = true; requestAnimationFrame(render); } }
 
-    function split() {           // 몰입 → 일반 레이아웃
-      if (!immersed || busy) return;
-      immersed = false; busy = true; lastToggle = Date.now();
-      window.scrollTo(0, 0);
-      body.classList.remove('is-immersed');
-      animateWave();
-      setTimeout(function () { busy = false; lock(false); }, DUR);
-    }
-    function immerse() {         // 맨 위에서 다시 위로 올리면 사진이 다시 차오름
-      if (immersed || busy || window.scrollY > 0) return;
-      immersed = true; busy = true; lastToggle = Date.now();
-      lock(true);
-      body.classList.add('is-immersed');
-      animateWave();
-      setTimeout(function () { busy = false; }, DUR);
-    }
-
-    function blocked() { return window.__inkIntroActive || busy; }
-    window.addEventListener('wheel', function (e) {
-      if (hold() && !window.__inkIntroActive && e.cancelable) e.preventDefault();
-      if (blocked()) return;
-      if (immersed && e.deltaY > 6) split();
-      else if (!immersed && e.deltaY < -6 && window.scrollY <= 0 && Date.now() - lastToggle > 700) immerse();
-    }, { passive: false });
-    window.addEventListener('keydown', function (e) {
-      var k = e.key, scrollKey = /^(ArrowDown|ArrowUp|PageDown|PageUp| |Spacebar|End|Home)$/.test(k);
-      if (hold() && scrollKey && !/input|textarea|select/i.test((e.target || {}).tagName || '')) e.preventDefault();
-      if (blocked()) return;
-      if (immersed && /^(ArrowDown|PageDown| |Spacebar|End)$/.test(k)) split();
-      else if (!immersed && /^(ArrowUp|PageUp|Home)$/.test(k) && window.scrollY <= 0) immerse();
-    });
-    var ty = null;
-    window.addEventListener('touchstart', function (e) { ty = e.touches[0].clientY; }, { passive: true });
-    window.addEventListener('touchmove', function (e) {
-      if (ty === null) return;
-      var dy = e.touches[0].clientY - ty;
-      if (hold()) {
-        if (e.cancelable) e.preventDefault();          // 몰입 화면·전환 중에는 페이지가 끌려 올라가지 않게
-        if (!immersed) return;
-        if (!blocked() && dy < -40) { split(); ty = null; }
-      } else if (!blocked() && dy > 70 && window.scrollY <= 0 && Date.now() - lastToggle > 700) { immerse(); ty = null; }
-    }, { passive: false });
-    window.addEventListener('touchend', function () { ty = null; }, { passive: true });
-
-    // 화면 아래 '스크롤' 안내
-    var cue = hero.querySelector('.hero__cue');
-    if (cue) cue.addEventListener('click', split);
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', function () { sizeHero(); schedule(); });
+    window.addEventListener('load', function () { sizeHero(); schedule(); });
+    if (window.ResizeObserver) new ResizeObserver(schedule).observe(header);
+    if (cue) cue.addEventListener('click', function () { window.scrollTo({ top: headerFull(), behavior: 'smooth' }); });
+    render();
   }
 
   /* 라이트박스 */
