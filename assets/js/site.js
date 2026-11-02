@@ -343,24 +343,25 @@
 
     var shade = hov.querySelector('.flow__ripple'), sctx = shade.getContext('2d');
     var map = document.createElement('canvas'), mctx = map.getContext('2d');
-    // 잔잔한 수면: 마우스가 지나간 자리에 '흔들림 세기'를 부드럽게 칠하고,
-    // 그 세기만큼 천천히 흘러가는 불규칙한 물결 무늬(노이즈)로 사진을 일렁이게 함 → 동그란 고리 없음
-    var CELL = 6, gw = 0, gh = 0, M = null, M2 = null, H = null, mImg = null, sImg = null;
-    var running = false, inside = false, last = null, pending = [];
-    var DECAY = 0.984;           // 작을수록 빨리 가라앉음 (크면 오래 넘실댐)
-    var STRENGTH = 1.5;          // 출렁임 크기
-    var FLOW = 0.12;             // 물결 무늬가 흘러가는 속도 (작을수록 느긋함)
+    // 물결 한 번 = 마우스 자리에서 '첫 물결 + 두 번째 물결'이 띠 전체로 퍼져 나감.
+    // 다 퍼질 때까지는 새 물결을 만들지 않고, 끝나면 다음 움직임에서 다시 시작.
+    // 물결 앞부분은 노이즈로 일그러뜨려 정원처럼 보이지 않게 함.
+    var CELL = 6, gw = 0, gh = 0, H = null, mImg = null, sImg = null;
+    var running = false, inside = false, wave = null, lastPos = null;
+    var SPEED = 0.075;           // 퍼지는 속도 (칸/ms)
+    var WL = 9;                  // 물결 하나의 폭 (칸)
+    var GAP = 22;                // 첫 물결과 두 번째 물결 사이 거리 (칸)
+    var AMP = 1.35;              // 출렁임 크기
 
     function setup() {
       var r = stage.getBoundingClientRect();
       var nw = Math.max(40, Math.round(r.width / CELL)), nh = Math.max(12, Math.round(r.height / CELL));
-      if (nw === gw && nh === gh && M) return;
+      if (nw === gw && nh === gh && H) return;
       gw = nw; gh = nh;
       map.width = shade.width = gw; map.height = shade.height = gh;
-      M = new Float32Array(gw * gh); M2 = new Float32Array(gw * gh); H = new Float32Array(gw * gh);
+      H = new Float32Array(gw * gh);
       mImg = mctx.createImageData(gw, gh); sImg = sctx.createImageData(gw, gh);
     }
-    function wake() { if (!running) { running = true; requestAnimationFrame(step); } }
 
     // 값 노이즈 (부드러운 불규칙 무늬)
     var perm = new Uint8Array(512);
@@ -374,63 +375,48 @@
       var a = rnd(ix, iy), b = rnd(ix + 1, iy), c = rnd(ix, iy + 1), d = rnd(ix + 1, iy + 1);
       return (a + (b - a) * ux) + ((c + (d - c) * ux) - (a + (b - a) * ux)) * uy - 0.5;
     }
+    function packet(q) { return Math.sin(q * Math.PI) * Math.exp(-q * q * 0.55); }
 
-    function stamp(cx, cy, amt, rad) {
-      var x0 = Math.max(0, Math.floor(cx - rad)), x1 = Math.min(gw - 1, Math.ceil(cx + rad));
-      var y0 = Math.max(0, Math.floor(cy - rad)), y1 = Math.min(gh - 1, Math.ceil(cy + rad));
-      for (var y = y0; y <= y1; y++) for (var x = x0; x <= x1; x++) {
-        var d2 = ((x - cx) * (x - cx) + (y - cy) * (y - cy)) / (rad * rad);
-        if (d2 < 1) { var k = y * gw + x; M[k] = Math.min(1, M[k] + amt * (1 - d2) * (1 - d2)); }
-      }
-    }
-    function stroke(x0, y0, x1, y1, amt) {
-      var dist = Math.hypot(x1 - x0, y1 - y0), n = Math.max(1, Math.ceil(dist / 1.2));
-      for (var i = 1; i <= n; i++) {
-        var t = i / n;
-        stamp(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, amt / n * 2.4, 12);   // 마지막 숫자 = 퍼지는 범위(칸)
-      }
+    function start(x, y) {
+      if (wave) return;                                   // 퍼지는 중에는 새 물결 없음
+      var far = Math.max(Math.hypot(x, y), Math.hypot(gw - x, y), Math.hypot(x, gh - y), Math.hypot(gw - x, gh - y));
+      wave = { x: x, y: y, t: performance.now(), end: far + GAP + WL * 3, seed: Math.random() * 100 };
+      if (!running) { running = true; requestAnimationFrame(step); }
     }
 
     function step(now) {
-      pending.forEach(function (m) { stroke(m[0], m[1], m[2], m[3], m[4]); });
-      pending.length = 0;
-
-      // 1) 흔들림 세기: 옆으로 살짝 번지면서 천천히 가라앉음
-      var x, y, k, maxv = 0;
-      for (y = 0; y < gh; y++) for (x = 0; x < gw; x++) {
-        k = y * gw + x;
-        var l = M[y * gw + Math.max(0, x - 1)], r = M[y * gw + Math.min(gw - 1, x + 1)];
-        var u = M[Math.max(0, y - 1) * gw + x], d = M[Math.min(gh - 1, y + 1) * gw + x];
-        var v = (M[k] * 0.52 + (l + r + u + d) * 0.12) * DECAY;   // 옆으로 조금 더 번짐
-        M2[k] = v; if (v > maxv) maxv = v;
-      }
-      var tmp = M; M = M2; M2 = tmp;
-
-      if (maxv < 0.01 && !inside) {
+      if (!wave) {
         running = false; track.style.filter = ''; sctx.clearRect(0, 0, gw, gh);
-        for (k = 0; k < M.length; k++) M[k] = 0;
         return;
       }
-
-      // 2) 불규칙한 물결 무늬 × 흔들림 세기 = 수면 높이
-      var t = now / 1000;
+      var age = now - wave.t, front = age * SPEED;
+      if (front > wave.end) {                             // 다 퍼짐 → 끝, 다음 물결 대기
+        wave = null; requestAnimationFrame(step);
+        return;
+      }
+      var fade = 1 - Math.pow(front / wave.end, 2);        // 멀리 갈수록 서서히 약해짐
+      var ins = Math.min(1, age / 260);                    // 시작은 부드럽게
+      var x, y, k, sd0 = wave.seed, tt = now / 1000;
       for (y = 0; y < gh; y++) for (x = 0; x < gw; x++) {
         k = y * gw + x;
-        if (M[k] < 0.002) { H[k] = 0; continue; }
-        // 크고 느린 물결 + 아주 옅은 잔결 → 잘게 떨리지 않고 묵직하게 넘실댐
-        var n = noise(x * 0.075 + t * FLOW, y * 0.11 - t * FLOW * 0.7) + 0.3 * noise(x * 0.15 - t * FLOW * 1.2, y * 0.2 + t * FLOW);
-        H[k] = n * M[k] * STRENGTH * 4;
+        // 물결 앞부분을 불규칙하게: 방향·위치에 따라 거리를 노이즈로 흔듦
+        var d = Math.hypot(x - wave.x, (y - wave.y) * 1.25) + noise(x * 0.045 + sd0, y * 0.07 + tt * 0.15) * 26;
+        var q1 = (d - front) / WL, q2 = (d - (front - GAP)) / WL;
+        var h = 0;
+        if (q1 > -3 && q1 < 3) h += packet(q1);
+        if (q2 > -3 && q2 < 3 && front > GAP) h += 0.6 * packet(q2);
+        // 물결 높이도 자리마다 조금씩 다르게
+        H[k] = h * AMP * fade * ins * (0.75 + 0.5 * (noise(x * 0.06 - tt * 0.1, y * 0.09 + sd0) + 0.5));
       }
 
-      // 3) 기울기 → 변위 지도(사진 굴절) + 수면의 빛·그늘
       var md = mImg.data, sd = sImg.data;
       for (y = 0; y < gh; y++) for (x = 0; x < gw; x++) {
         k = y * gw + x;
         var gx = H[y * gw + Math.min(gw - 1, x + 1)] - H[y * gw + Math.max(0, x - 1)];
         var gy = H[Math.min(gh - 1, y + 1) * gw + x] - H[Math.max(0, y - 1) * gw + x];
         var p = k * 4;
-        md[p] = Math.max(0, Math.min(255, 128 + gx * 170));
-        md[p + 1] = Math.max(0, Math.min(255, 128 + gy * 170));
+        md[p] = Math.max(0, Math.min(255, 128 + gx * 150));
+        md[p + 1] = Math.max(0, Math.min(255, 128 + gy * 150));
         md[p + 2] = 128; md[p + 3] = 255;
         var light = -gx * 0.55 - gy * 0.85;
         if (light > 0) { sd[p] = sd[p + 1] = sd[p + 2] = 255; sd[p + 3] = Math.min(120, light * 300); }
@@ -454,25 +440,15 @@
 
     function toGrid(e) {
       var r = stage.getBoundingClientRect();
-      return { x: (e.clientX - r.left) / CELL, y: (e.clientY - r.top) / CELL, t: performance.now() };
+      return { x: (e.clientX - r.left) / CELL, y: (e.clientY - r.top) / CELL };
     }
-    hov.addEventListener('mouseenter', function (e) { inside = true; setup(); last = toGrid(e); wake(); });
-    hov.addEventListener('mouseleave', function () { inside = false; last = null; });
+    hov.addEventListener('mouseenter', function (e) { inside = true; setup(); lastPos = toGrid(e); start(lastPos.x, lastPos.y); });
+    hov.addEventListener('mouseleave', function () { inside = false; lastPos = null; });
     hov.addEventListener('mousemove', function (e) {
-      if (!M) setup();
-      var cur = toGrid(e);
-      if (last) {
-        var dt = Math.max(8, cur.t - last.t);
-        var speed = Math.hypot(cur.x - last.x, cur.y - last.y) / dt;      // 칸/ms
-        var amt = Math.min(1, 0.45 + speed * 3);                            // 빨리 휘저을수록 조금 더 강하게
-        pending.push([last.x, last.y, cur.x, cur.y, amt]);
-      }
-      last = cur;
-      wake();
-    });
-    hov.addEventListener('mousedown', function (e) {
-      if (!M) setup();
-      var c = toGrid(e); pending.push([c.x, c.y, c.x, c.y, 1.2]); wake();
+      if (!H) setup();
+      var c = toGrid(e), moved = !lastPos || Math.hypot(c.x - lastPos.x, c.y - lastPos.y) > 1.5;
+      lastPos = c;
+      if (moved) start(c.x, c.y);                          // 퍼지는 중이면 무시됨
     });
     window.addEventListener('resize', function () { if (running) setup(); });
   })();
