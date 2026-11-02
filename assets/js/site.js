@@ -335,87 +335,108 @@
         '<feFlood flood-color="rgb(128,128,128)" result="flat"/>' +
         '<feImage result="map0" preserveAspectRatio="none"/>' +
         '<feMerge result="map1"><feMergeNode in="flat"/><feMergeNode in="map0"/></feMerge>' +
-        '<feGaussianBlur in="map1" stdDeviation="4" result="map"/>' +
-        '<feDisplacementMap in="SourceGraphic" in2="map" scale="16" xChannelSelector="R" yChannelSelector="G"/>' +
+        '<feGaussianBlur in="map1" stdDeviation="5" result="map"/>' +
+        '<feDisplacementMap in="SourceGraphic" in2="map" scale="14" xChannelSelector="R" yChannelSelector="G"/>' +
       '</filter>';
     document.body.appendChild(host);
     var filt = host.querySelector('filter'), feImg = host.querySelector('feImage'), feDisp = host.querySelector('feDisplacementMap');
 
     var shade = hov.querySelector('.flow__ripple'), sctx = shade.getContext('2d');
     var map = document.createElement('canvas'), mctx = map.getContext('2d');
-    // 실제 물처럼: 수면을 격자로 나눠 물결이 이웃 칸으로 번져 나가게 계산 (두 버퍼 파동 방정식)
-    var CELL = 5, gw = 0, gh = 0, A = null, B = null, mImg = null, sImg = null;
+    // 잔잔한 수면: 마우스가 지나간 자리에 '흔들림 세기'를 부드럽게 칠하고,
+    // 그 세기만큼 천천히 흘러가는 불규칙한 물결 무늬(노이즈)로 사진을 일렁이게 함 → 동그란 고리 없음
+    var CELL = 6, gw = 0, gh = 0, M = null, M2 = null, H = null, mImg = null, sImg = null;
     var running = false, inside = false, last = null, pending = [];
-    var DAMP = 0.982;            // 클수록 물결이 오래 남음
+    var DECAY = 0.965;           // 작을수록 빨리 가라앉음
+    var STRENGTH = 0.55;         // 흔들림 세기
 
     function setup() {
       var r = stage.getBoundingClientRect();
       var nw = Math.max(40, Math.round(r.width / CELL)), nh = Math.max(12, Math.round(r.height / CELL));
-      if (nw === gw && nh === gh && A) return;
+      if (nw === gw && nh === gh && M) return;
       gw = nw; gh = nh;
       map.width = shade.width = gw; map.height = shade.height = gh;
-      A = new Float32Array(gw * gh); B = new Float32Array(gw * gh);
+      M = new Float32Array(gw * gh); M2 = new Float32Array(gw * gh); H = new Float32Array(gw * gh);
       mImg = mctx.createImageData(gw, gh); sImg = sctx.createImageData(gw, gh);
     }
     function wake() { if (!running) { running = true; requestAnimationFrame(step); } }
 
-    // 붓처럼 둥글게 물을 밀어 넣음
+    // 값 노이즈 (부드러운 불규칙 무늬)
+    var perm = new Uint8Array(512);
+    (function () { var p = [], i, j, t; for (i = 0; i < 256; i++) p[i] = i;
+      for (i = 255; i > 0; i--) { j = Math.floor(Math.random() * (i + 1)); t = p[i]; p[i] = p[j]; p[j] = t; }
+      for (i = 0; i < 512; i++) perm[i] = p[i & 255]; })();
+    function rnd(ix, iy) { return perm[(perm[ix & 255] + iy) & 511] / 255; }
+    function noise(x, y) {
+      var ix = Math.floor(x), iy = Math.floor(y), fx = x - ix, fy = y - iy;
+      var ux = fx * fx * (3 - 2 * fx), uy = fy * fy * (3 - 2 * fy);
+      var a = rnd(ix, iy), b = rnd(ix + 1, iy), c = rnd(ix, iy + 1), d = rnd(ix + 1, iy + 1);
+      return (a + (b - a) * ux) + ((c + (d - c) * ux) - (a + (b - a) * ux)) * uy - 0.5;
+    }
+
     function stamp(cx, cy, amt, rad) {
-      var x0 = Math.max(1, Math.floor(cx - rad)), x1 = Math.min(gw - 2, Math.ceil(cx + rad));
-      var y0 = Math.max(1, Math.floor(cy - rad)), y1 = Math.min(gh - 2, Math.ceil(cy + rad));
+      var x0 = Math.max(0, Math.floor(cx - rad)), x1 = Math.min(gw - 1, Math.ceil(cx + rad));
+      var y0 = Math.max(0, Math.floor(cy - rad)), y1 = Math.min(gh - 1, Math.ceil(cy + rad));
       for (var y = y0; y <= y1; y++) for (var x = x0; x <= x1; x++) {
         var d2 = ((x - cx) * (x - cx) + (y - cy) * (y - cy)) / (rad * rad);
-        if (d2 < 1) A[y * gw + x] += amt * (1 - d2) * (1 - d2);
+        if (d2 < 1) { var k = y * gw + x; M[k] = Math.min(1, M[k] + amt * (1 - d2) * (1 - d2)); }
       }
     }
-    // 지난 위치 → 지금 위치까지 경로 전체를 촘촘히 칠해서 끊김 없이 이어지게
     function stroke(x0, y0, x1, y1, amt) {
-      var dist = Math.hypot(x1 - x0, y1 - y0), n = Math.max(1, Math.ceil(dist / 0.8));
+      var dist = Math.hypot(x1 - x0, y1 - y0), n = Math.max(1, Math.ceil(dist / 1.2));
       for (var i = 1; i <= n; i++) {
         var t = i / n;
-        stamp(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, amt / Math.sqrt(n), 2.6);
+        stamp(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, amt / n * 2.2, 4.5);
       }
     }
 
-    function step() {
-      // 1) 쌓인 마우스 움직임 반영
+    function step(now) {
       pending.forEach(function (m) { stroke(m[0], m[1], m[2], m[3], m[4]); });
       pending.length = 0;
 
-      // 2) 물결 번짐 계산
+      // 1) 흔들림 세기: 옆으로 살짝 번지면서 천천히 가라앉음
       var x, y, k, maxv = 0;
-      for (y = 1; y < gh - 1; y++) for (x = 1; x < gw - 1; x++) {
+      for (y = 0; y < gh; y++) for (x = 0; x < gw; x++) {
         k = y * gw + x;
-        var v = ((A[k - 1] + A[k + 1] + A[k - gw] + A[k + gw]) * 0.5 - B[k]) * DAMP;
-        B[k] = v;
-        if (v > maxv) maxv = v; else if (-v > maxv) maxv = -v;
+        var l = M[y * gw + Math.max(0, x - 1)], r = M[y * gw + Math.min(gw - 1, x + 1)];
+        var u = M[Math.max(0, y - 1) * gw + x], d = M[Math.min(gh - 1, y + 1) * gw + x];
+        var v = (M[k] * 0.6 + (l + r + u + d) * 0.1) * DECAY;
+        M2[k] = v; if (v > maxv) maxv = v;
       }
-      var tmp = A; A = B; B = tmp;
+      var tmp = M; M = M2; M2 = tmp;
 
-      if (maxv < 0.004 && !inside) {
+      if (maxv < 0.01 && !inside) {
         running = false; track.style.filter = ''; sctx.clearRect(0, 0, gw, gh);
-        for (k = 0; k < A.length; k++) { A[k] = 0; B[k] = 0; }
+        for (k = 0; k < M.length; k++) M[k] = 0;
         return;
+      }
+
+      // 2) 불규칙한 물결 무늬 × 흔들림 세기 = 수면 높이
+      var t = now / 1000;
+      for (y = 0; y < gh; y++) for (x = 0; x < gw; x++) {
+        k = y * gw + x;
+        if (M[k] < 0.002) { H[k] = 0; continue; }
+        var n = noise(x * 0.16 + t * 0.35, y * 0.22 - t * 0.25) + 0.5 * noise(x * 0.33 - t * 0.5, y * 0.4 + t * 0.4);
+        H[k] = n * M[k] * STRENGTH * 4;
       }
 
       // 3) 기울기 → 변위 지도(사진 굴절) + 수면의 빛·그늘
       var md = mImg.data, sd = sImg.data;
       for (y = 0; y < gh; y++) for (x = 0; x < gw; x++) {
         k = y * gw + x;
-        var gx = A[y * gw + Math.min(gw - 1, x + 1)] - A[y * gw + Math.max(0, x - 1)];
-        var gy = A[Math.min(gh - 1, y + 1) * gw + x] - A[Math.max(0, y - 1) * gw + x];
+        var gx = H[y * gw + Math.min(gw - 1, x + 1)] - H[y * gw + Math.max(0, x - 1)];
+        var gy = H[Math.min(gh - 1, y + 1) * gw + x] - H[Math.max(0, y - 1) * gw + x];
         var p = k * 4;
-        md[p] = Math.max(0, Math.min(255, 128 + gx * 70));
-        md[p + 1] = Math.max(0, Math.min(255, 128 + gy * 70));
+        md[p] = Math.max(0, Math.min(255, 128 + gx * 120));
+        md[p + 1] = Math.max(0, Math.min(255, 128 + gy * 120));
         md[p + 2] = 128; md[p + 3] = 255;
         var light = -gx * 0.55 - gy * 0.85;
-        if (light > 0) { sd[p] = sd[p + 1] = sd[p + 2] = 255; sd[p + 3] = Math.min(110, light * 150); }
-        else { sd[p] = 20; sd[p + 1] = 35; sd[p + 2] = 50; sd[p + 3] = Math.min(45, -light * 70); }
+        if (light > 0) { sd[p] = sd[p + 1] = sd[p + 2] = 255; sd[p + 3] = Math.min(80, light * 260); }
+        else { sd[p] = 20; sd[p + 1] = 35; sd[p + 2] = 50; sd[p + 3] = Math.min(30, -light * 110); }
       }
       sctx.putImageData(sImg, 0, 0);
       mctx.putImageData(mImg, 0, 0);
 
-      // 4) 지도를 흐르는 사진 띠 좌표에 맞춰 붙임
       var sr = stage.getBoundingClientRect(), tr = track.getBoundingClientRect();
       var ox = sr.left - tr.left, oy = sr.top - tr.top;
       filt.setAttribute('x', ox); filt.setAttribute('y', oy);
@@ -436,20 +457,20 @@
     hov.addEventListener('mouseenter', function (e) { inside = true; setup(); last = toGrid(e); wake(); });
     hov.addEventListener('mouseleave', function () { inside = false; last = null; });
     hov.addEventListener('mousemove', function (e) {
-      if (!A) setup();
+      if (!M) setup();
       var cur = toGrid(e);
       if (last) {
         var dt = Math.max(8, cur.t - last.t);
         var speed = Math.hypot(cur.x - last.x, cur.y - last.y) / dt;      // 칸/ms
-        var amt = Math.min(2.2, 0.35 + speed * 9);                          // 빨리 휘저을수록 강하게
+        var amt = Math.min(0.9, 0.25 + speed * 3);                          // 빨리 휘저을수록 조금 더 강하게
         pending.push([last.x, last.y, cur.x, cur.y, amt]);
       }
       last = cur;
       wake();
     });
     hov.addEventListener('mousedown', function (e) {
-      if (!A) setup();
-      var c = toGrid(e); pending.push([c.x, c.y, c.x, c.y, 3]); wake();
+      if (!M) setup();
+      var c = toGrid(e); pending.push([c.x, c.y, c.x, c.y, 1.2]); wake();
     });
     window.addEventListener('resize', function () { if (running) setup(); });
   })();

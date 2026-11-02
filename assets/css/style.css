@@ -455,11 +455,16 @@ details.privacy .terms { border: 0; border-top: 1px solid var(--line); height: 2
   .flow__hover {
     display: flex; align-items: center; justify-content: center;
     position: absolute; inset: -56px 0; z-index: 2;
-    background: radial-gradient(ellipse 62% 58% at 50% 50%, rgba(255,255,255,.3), rgba(255,255,255,.12) 70%, rgba(255,255,255,0));
+    background: rgba(255,255,255,.22);
     -webkit-backdrop-filter: blur(6px) saturate(115%); backdrop-filter: blur(6px) saturate(115%);
     /* 네모난 경계 없이 사방으로 둥글게 흐려지도록 */
-    -webkit-mask-image: radial-gradient(ellipse 58% 62% at 50% 50%, #000 0%, #000 42%, rgba(0,0,0,.75) 60%, rgba(0,0,0,.3) 80%, transparent 100%);
-            mask-image: radial-gradient(ellipse 58% 62% at 50% 50%, #000 0%, #000 42%, rgba(0,0,0,.75) 60%, rgba(0,0,0,.3) 80%, transparent 100%);
+    /* 좌우는 끝까지 덮고, 위아래 경계만 부드럽게 */
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 52px, #000 calc(100% - 52px), transparent 100%),
+                        linear-gradient(to right, transparent 0, #000 2%, #000 98%, transparent 100%);
+    -webkit-mask-composite: source-in;
+            mask-image: linear-gradient(to bottom, transparent 0, #000 52px, #000 calc(100% - 52px), transparent 100%),
+                        linear-gradient(to right, transparent 0, #000 2%, #000 98%, transparent 100%);
+            mask-composite: intersect;
     opacity: 0; transition: opacity .55s ease; cursor: pointer;
   }
   .flow__stage:hover .flow__hover, .flow__hover:focus-visible { opacity: 1; }
