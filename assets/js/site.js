@@ -290,6 +290,7 @@
       var visTop = Math.max(hr.top, 0);            // 로고·메뉴 아래부터 (메뉴와 겹치지 않게)
       var visBot = Math.min(hr.bottom, vh);
       if (info) info.style.bottom = Math.max(window.innerWidth < 761 ? 10 : 18, hr.bottom - vh + 18) + 'px';
+      if (info) visBot = Math.min(visBot, info.getBoundingClientRect().top - 8);   // 하단 정보와 겹치지 않게
       if (dotsWrap) dotsWrap.style.top = ((visTop + visBot) / 2 - hr.top) + 'px';
       body.classList.toggle('is-top', p < 0.02);
     }
