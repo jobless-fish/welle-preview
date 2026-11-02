@@ -36,6 +36,73 @@
     update();
   }
 
+  /* 자체 스크롤바 — 화면 폭을 차지하지 않고 위에 얇게 떠 있음 (마우스 기기만) */
+  (function () {
+    if (!window.matchMedia || !matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    var root = document.documentElement, body = document.body;
+    var bar = document.createElement('div');
+    bar.className = 'sbar is-off';
+    bar.setAttribute('aria-hidden', 'true');
+    bar.innerHTML = '<div class="sbar__thumb"></div>';
+    body.appendChild(bar);
+    var thumb = bar.firstChild, hideTimer = null, drag = null, thumbH = 0, ticking = false;
+
+    function metrics() { var dh = root.scrollHeight, vh = window.innerHeight; return { dh: dh, vh: vh, max: Math.max(1, dh - vh) }; }
+    function update() {
+      ticking = false;
+      var m = metrics();
+      var off = m.dh <= m.vh + 1 || body.classList.contains('is-immersed') ||
+                getComputedStyle(root).overflow === 'hidden';
+      bar.classList.toggle('is-off', off);
+      if (off) return;
+      thumbH = Math.max(36, m.vh * m.vh / m.dh);
+      var top = (window.scrollY / m.max) * (m.vh - thumbH);
+      thumb.style.height = thumbH + 'px';
+      thumb.style.transform = 'translateY(' + top + 'px)';
+    }
+    function schedule() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
+    function flash() {
+      bar.classList.add('is-on');
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(function () { if (!drag) bar.classList.remove('is-on'); }, 1000);
+    }
+
+    window.addEventListener('scroll', function () { schedule(); flash(); }, { passive: true });
+    window.addEventListener('resize', schedule);
+    window.addEventListener('load', schedule);
+    if (window.ResizeObserver) new ResizeObserver(schedule).observe(body);
+    new MutationObserver(schedule).observe(body, { attributes: true, attributeFilter: ['class'] });
+    new MutationObserver(schedule).observe(root, { attributes: true, attributeFilter: ['style'] });
+
+    // 오른쪽 가장자리에 마우스가 오면 보여주기
+    window.addEventListener('mousemove', function (e) { if (window.innerWidth - e.clientX < 28) flash(); }, { passive: true });
+
+    // 끌기
+    thumb.addEventListener('pointerdown', function (e) {
+      e.preventDefault();
+      drag = { y: e.clientY, s: window.scrollY };
+      thumb.setPointerCapture(e.pointerId);
+      bar.classList.add('is-drag'); root.classList.add('sbar-dragging');
+    });
+    thumb.addEventListener('pointermove', function (e) {
+      if (!drag) return;
+      var m = metrics();
+      window.scrollTo(0, drag.s + (e.clientY - drag.y) * m.max / Math.max(1, m.vh - thumbH));
+    });
+    function endDrag() { if (!drag) return; drag = null; bar.classList.remove('is-drag'); root.classList.remove('sbar-dragging'); flash(); }
+    thumb.addEventListener('pointerup', endDrag);
+    thumb.addEventListener('pointercancel', endDrag);
+
+    // 빈 곳 클릭: 그 위치로 이동
+    bar.addEventListener('pointerdown', function (e) {
+      if (e.target !== bar) return;
+      var m = metrics();
+      window.scrollTo({ top: (e.clientY - thumbH / 2) / Math.max(1, m.vh - thumbH) * m.max, behavior: 'smooth' });
+    });
+
+    update();
+  })();
+
   /* 이미지가 로드되면 부드럽게 나타나기 */
   document.querySelectorAll('.masonry img').forEach(function (img) {
     if (img.complete && img.naturalWidth) img.classList.add('is-loaded');
@@ -108,12 +175,16 @@
     hero.style.transition = 'none';
     body.classList.add('js-hero');
 
-    function lock(on) { root.style.overflow = on ? 'hidden' : ''; }
+    // 스크롤바를 숨겼다 보였다 하면 화면 폭이 바뀌며 툭 끊김 →
+    // 스크롤바는 그대로 두고, 몰입 화면·전환 중에는 스크롤 동작만 막음
+    var held = false;
+    function lock(on) { held = on; }
     if (immersed) { body.classList.add('is-immersed'); lock(true); }
     void hero.offsetHeight;
     requestAnimationFrame(function () { requestAnimationFrame(function () { hero.style.transition = ''; }); });
     // 인트로가 끝나며 스크롤을 풀어도, 몰입 화면이면 다시 잠금
     window.addEventListener('inkintro:done', function () { if (immersed) lock(true); });
+    function hold() { return held || busy; }
 
     // 사진 윗부분이 물결처럼 출렁이며 걷히는 효과
     function animateWave() {
@@ -138,6 +209,7 @@
     function split() {           // 몰입 → 일반 레이아웃
       if (!immersed || busy) return;
       immersed = false; busy = true; lastToggle = Date.now();
+      window.scrollTo(0, 0);
       body.classList.remove('is-immersed');
       animateWave();
       setTimeout(function () { busy = false; lock(false); }, DUR);
@@ -153,13 +225,15 @@
 
     function blocked() { return window.__inkIntroActive || busy; }
     window.addEventListener('wheel', function (e) {
+      if (hold() && !window.__inkIntroActive && e.cancelable) e.preventDefault();
       if (blocked()) return;
       if (immersed && e.deltaY > 6) split();
       else if (!immersed && e.deltaY < -6 && window.scrollY <= 0 && Date.now() - lastToggle > 700) immerse();
-    }, { passive: true });
+    }, { passive: false });
     window.addEventListener('keydown', function (e) {
+      var k = e.key, scrollKey = /^(ArrowDown|ArrowUp|PageDown|PageUp| |Spacebar|End|Home)$/.test(k);
+      if (hold() && scrollKey && !/input|textarea|select/i.test((e.target || {}).tagName || '')) e.preventDefault();
       if (blocked()) return;
-      var k = e.key;
       if (immersed && /^(ArrowDown|PageDown| |Spacebar|End)$/.test(k)) split();
       else if (!immersed && /^(ArrowUp|PageUp|Home)$/.test(k) && window.scrollY <= 0) immerse();
     });
@@ -168,8 +242,9 @@
     window.addEventListener('touchmove', function (e) {
       if (ty === null) return;
       var dy = e.touches[0].clientY - ty;
-      if (immersed) {
-        if (e.cancelable) e.preventDefault();          // 몰입 화면에서는 페이지가 끌려 올라가지 않게
+      if (hold()) {
+        if (e.cancelable) e.preventDefault();          // 몰입 화면·전환 중에는 페이지가 끌려 올라가지 않게
+        if (!immersed) return;
         if (!blocked() && dy < -40) { split(); ty = null; }
       } else if (!blocked() && dy > 70 && window.scrollY <= 0 && Date.now() - lastToggle > 700) { immerse(); ty = null; }
     }, { passive: false });
