@@ -322,6 +322,14 @@ details.privacy .terms { border: 0; border-top: 1px solid var(--line); height: 2
 .home .site-header.is-scrolled { -webkit-backdrop-filter: none; backdrop-filter: none; }
 .hdr-wave { position: absolute; left: 0; top: 0; width: 100%; height: calc(100% + 90px); z-index: -1; pointer-events: none; overflow: visible; }
 .hdr-wave path { fill: rgba(255, 255, 255, .97); }
+/* 물결 아래 사진을 살짝 흐리게 — 아래로 갈수록 선명 */
+.hdr-blur {
+  position: absolute; left: 0; right: 0; top: 0; height: 0; z-index: -2; pointer-events: none;
+  -webkit-backdrop-filter: blur(var(--tb, 0px)); backdrop-filter: blur(var(--tb, 0px));
+  -webkit-mask-image: linear-gradient(#000 45%, transparent);
+          mask-image: linear-gradient(#000 45%, transparent);
+  transition: opacity .3s ease;
+}
 .home .logo img { transition: width .3s ease; }
 
 /* 사진 위 은은한 그늘 (흰 로고가 밝은 하늘 위에서도 보이게) */

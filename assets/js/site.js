@@ -174,7 +174,32 @@
     svg.setAttribute('preserveAspectRatio', 'none');
     var path = document.createElementNS(NS, 'path');
     svg.appendChild(path);
+    // 물결 가장자리를 부드럽게 번지게 하는 필터
+    var defs = document.createElementNS(NS, 'defs');
+    defs.innerHTML = '<filter id="wave-soft" x="-5%" y="-20%" width="110%" height="140%">' +
+      '<feGaussianBlur stdDeviation="0 2"/></filter>';
+    svg.insertBefore(defs, path);
+    path.setAttribute('filter', 'url(#wave-soft)');
+    var softBlur = defs.querySelector('feGaussianBlur');
     header.insertBefore(svg, header.firstChild);
+
+    // 물결 아래쪽 사진을 살짝 흐리게 (아래로 갈수록 선명해짐)
+    var topBlur = document.createElement('div');
+    topBlur.className = 'hdr-blur';
+    topBlur.setAttribute('aria-hidden', 'true');
+    header.insertBefore(topBlur, header.firstChild);
+
+    // 스크롤 속도에 따른 세로 모션블러 (사진에만)
+    var mbHost = document.createElementNS(NS, 'svg');
+    mbHost.setAttribute('width', '0'); mbHost.setAttribute('height', '0');
+    mbHost.setAttribute('aria-hidden', 'true');
+    mbHost.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden';
+    mbHost.innerHTML = '<filter id="hero-mblur" x="0" y="-10%" width="100%" height="120%">' +
+      '<feGaussianBlur stdDeviation="0 0" edgeMode="duplicate"/></filter>';
+    body.appendChild(mbHost);
+    var mbNode = mbHost.querySelector('feGaussianBlur');
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var mb = 0, lastY = window.scrollY, lastT = performance.now();
 
     function headerFull() { return parseFloat(getComputedStyle(root).getPropertyValue('--header-h')) || 190; }
     function sizeHero() {
@@ -213,6 +238,29 @@
       }
       svg.setAttribute('viewBox', '0 0 ' + W + ' ' + (Hc + 90));
       path.setAttribute('d', p <= 0 ? '' : d + 'Z');
+
+      // 위쪽 블러: 전환 중간에 가장 강하고, 끝나면 사라짐
+      var mid = Math.sin(Math.PI * p);
+      var tb = p >= 1 ? 0 : 2.5 + 7 * mid;
+      topBlur.style.height = Math.round(base + amp + 120) + 'px';
+      topBlur.style.setProperty('--tb', tb.toFixed(2) + 'px');
+      topBlur.style.opacity = p >= 1 ? '0' : '1';
+
+      // 모션블러: 스크롤 속도 → 세로 번짐 (전환 구간에서만)
+      var now = performance.now(), dt = Math.max(8, now - lastT);
+      var v = Math.abs(y - lastY) / dt;            // px/ms
+      lastY = y; lastT = now;
+      var target = (reduce || p >= 1) ? 0 : Math.min(9, v * 7);
+      mb = mb * 0.72 + target * 0.28;
+      if (mb < 0.15 && target === 0) mb = 0;
+      if (mb > 0.05) {
+        mbNode.setAttribute('stdDeviation', '0 ' + mb.toFixed(2));
+        hero.style.filter = 'url(#hero-mblur)';
+      } else if (hero.style.filter) {
+        hero.style.filter = '';
+      }
+      softBlur.setAttribute('stdDeviation', '0 ' + (1.5 + 3.5 * mid + mb * 0.4).toFixed(2));
+      if (mb > 0) schedule();                      // 멈춘 뒤에도 번짐이 서서히 풀리도록 계속 그림
 
       // 로고·메뉴: 흰색 → 검정 (물결이 지나가는 타이밍에 맞춰)
       var k = Math.min(1, Math.max(0, (e - 0.25) / 0.6));
