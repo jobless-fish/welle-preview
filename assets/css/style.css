@@ -454,11 +454,12 @@ details.privacy .terms { border: 0; border-top: 1px solid var(--line); height: 2
 @media (hover: hover) and (pointer: fine) {
   .flow__hover {
     display: flex; align-items: center; justify-content: center;
-    position: absolute; inset: -6px 0; z-index: 2;
-    background: rgba(255, 255, 255, .22);
-    -webkit-backdrop-filter: blur(5px) saturate(115%); backdrop-filter: blur(5px) saturate(115%);
-    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-            mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    position: absolute; inset: -56px 0; z-index: 2;
+    background: radial-gradient(ellipse 62% 58% at 50% 50%, rgba(255,255,255,.3), rgba(255,255,255,.12) 70%, rgba(255,255,255,0));
+    -webkit-backdrop-filter: blur(6px) saturate(115%); backdrop-filter: blur(6px) saturate(115%);
+    /* 네모난 경계 없이 사방으로 둥글게 흐려지도록 */
+    -webkit-mask-image: radial-gradient(ellipse 58% 62% at 50% 50%, #000 0%, #000 42%, rgba(0,0,0,.75) 60%, rgba(0,0,0,.3) 80%, transparent 100%);
+            mask-image: radial-gradient(ellipse 58% 62% at 50% 50%, #000 0%, #000 42%, rgba(0,0,0,.75) 60%, rgba(0,0,0,.3) 80%, transparent 100%);
     opacity: 0; transition: opacity .55s ease; cursor: pointer;
   }
   .flow__stage:hover .flow__hover, .flow__hover:focus-visible { opacity: 1; }
@@ -471,6 +472,6 @@ details.privacy .terms { border: 0; border-top: 1px solid var(--line); height: 2
   .flow__stage:hover .flow__label { transform: translateY(0); }
   .flow__label span { display: inline-block; transition: transform .3s ease; }
   .flow__hover:hover .flow__label span { transform: translateX(6px); }
-  .flow__ripple { position: absolute; inset: 6px 0; width: 100%; height: calc(100% - 12px); pointer-events: none; image-rendering: auto; filter: blur(3px); }
+  .flow__ripple { position: absolute; inset: 56px 0; width: 100%; height: calc(100% - 112px); pointer-events: none; image-rendering: auto; filter: blur(3px); }
   .flow__cta { display: none; }   /* PC는 마우스를 올리면 뜨는 표시로 대신 */
 }
