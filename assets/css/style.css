@@ -424,7 +424,7 @@ details.privacy .terms { border: 0; border-top: 1px solid var(--line); height: 2
   -webkit-mask-image: linear-gradient(transparent, #000 70%); mask-image: linear-gradient(transparent, #000 70%);
   background: linear-gradient(rgba(255,255,255,0) 0%, rgba(255,255,255,0) 35%, rgba(255,255,255,.55) 80%, #fff 100%);
 }
-@media (max-width: 760px) { .hero__fade { height: 34px; } }
+@media (max-width: 760px) { .hero__fade { height: 34px; -webkit-backdrop-filter: none; backdrop-filter: none; } }
 
 /* 홈 아래: 갤러리 사진이 천천히 옆으로 흐르는 띠 */
 .flow { position: relative; padding: clamp(28px, 4vw, 48px) 0 clamp(56px, 8vw, 88px); overflow: hidden; }

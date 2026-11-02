@@ -278,13 +278,20 @@
     body.appendChild(mbHost);
     var mbNode = mbHost.querySelector('feGaussianBlur');
     var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // 폰·태블릿: 무거운 효과(실시간 블러·모션블러·사진 상자 재계산)를 빼서 스크롤이 버벅이지 않게
+    var lite = window.matchMedia && matchMedia('(hover: none), (pointer: coarse), (max-width: 760px)').matches;
+    if (lite) { path.removeAttribute('filter'); topBlur.style.display = 'none'; }
     var mb = 0, lastY = window.scrollY, lastT = performance.now();
 
     function headerFull() { return parseFloat(getComputedStyle(root).getPropertyValue('--header-h')) || 190; }
     var mainEl = document.querySelector('main');
     var mobH = 0, mobW = 0;
-    function sizeHero() {
+    var sizedW = 0;
+    function sizeHero(force) {
       var w = root.clientWidth, h = w * 2 / 3, H = headerFull();
+      // 폰에서 주소창이 숨었다 나타나며 생기는 resize는 무시 (폭이 바뀔 때만 다시 계산)
+      if (lite && !force && w === sizedW) return;
+      sizedW = w;
       if (window.innerWidth > 760) {
         h = Math.min(h, window.innerHeight - H + 40);
       } else {
@@ -302,6 +309,12 @@
         SPAN = Math.max(1.1, Math.min(2, room / H));
       }
       root.style.setProperty('--span', Math.round(H * SPAN) + 'px');
+      if (lite) {
+        // 사진 상자는 처음 위치(헤더 뒤까지 꽉 찬 상태)로 고정 → 스크롤 중 사진을 다시 그리지 않음
+        var top0 = hero.getBoundingClientRect().top + window.scrollY;
+        hero.style.setProperty('--ext', top0.toFixed(1) + 'px');
+        hero.style.setProperty('--exb', '0px');
+      }
     }
     var SPAN = 2;   // 전환에 쓰는 스크롤 거리 = 헤더 높이 × SPAN (클수록 천천히)
     sizeHero();
@@ -327,8 +340,10 @@
       var topScreen = Math.max(base, 0);
       var botScreen = Math.min(hrect.bottom, window.innerHeight);
       if (botScreen - topScreen < 60) topScreen = Math.max(hrect.top, botScreen - 60);
-      hero.style.setProperty('--ext', (hrect.top - topScreen).toFixed(1) + 'px');
-      hero.style.setProperty('--exb', Math.max(0, hrect.bottom - botScreen).toFixed(1) + 'px');
+      if (!lite) {
+        hero.style.setProperty('--ext', (hrect.top - topScreen).toFixed(1) + 'px');
+        hero.style.setProperty('--exb', Math.max(0, hrect.bottom - botScreen).toFixed(1) + 'px');
+      }
       var amp = Math.sin(Math.PI * p) * (W < 700 ? 24 : 40);
       var ph = y * 0.018 / SPAN;
       var d = 'M0,0 H' + W + ' ';
@@ -351,7 +366,7 @@
       var now = performance.now(), dt = Math.max(8, now - lastT);
       var v = Math.abs(y - lastY) / dt;            // px/ms
       lastY = y; lastT = now;
-      var target = (reduce || p >= 1) ? 0 : Math.min(9, v * 7);
+      var target = (reduce || lite || p >= 1) ? 0 : Math.min(9, v * 7);
       mb = mb * 0.72 + target * 0.28;
       if (mb < 0.15 && target === 0) mb = 0;
       if (mb > 0.05) {
@@ -360,12 +375,14 @@
       } else if (hero.style.filter) {
         hero.style.filter = '';
       }
-      softBlur.setAttribute('stdDeviation', '0 ' + (1.5 + 3.5 * mid + mb * 0.4).toFixed(2));
+      if (!lite) softBlur.setAttribute('stdDeviation', '0 ' + (1.5 + 3.5 * mid + mb * 0.4).toFixed(2));
       if (mb > 0) schedule();                      // 멈춘 뒤에도 번짐이 서서히 풀리도록 계속 그림
 
       // 로고·메뉴: 흰색 → 검정 (물결이 지나가는 타이밍에 맞춰)
       var k = Math.min(1, Math.max(0, (e - 0.25) / 0.6));
-      logoImg.style.filter = 'brightness(0) invert(' + (1 - k).toFixed(3) + ') drop-shadow(0 1px 10px rgba(0,0,0,' + (0.28 * (1 - k)).toFixed(3) + '))';
+      logoImg.style.filter = lite
+        ? 'brightness(0) invert(' + (1 - k).toFixed(3) + ')'
+        : 'brightness(0) invert(' + (1 - k).toFixed(3) + ') drop-shadow(0 1px 10px rgba(0,0,0,' + (0.28 * (1 - k)).toFixed(3) + '))';
       var c = Math.round(lerp(255, 33, k));
       navLinks.forEach(function (a) {
         a.style.color = 'rgb(' + c + ',' + c + ',' + c + ')';
@@ -386,7 +403,7 @@
 
     window.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', function () { sizeHero(); schedule(); });
-    window.addEventListener('load', function () { sizeHero(); schedule(); });
+    window.addEventListener('load', function () { sizeHero(true); schedule(); });
     if (window.ResizeObserver) new ResizeObserver(schedule).observe(header);
     render();
   }
