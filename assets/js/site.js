@@ -387,7 +387,7 @@
       var dist = Math.hypot(x1 - x0, y1 - y0), n = Math.max(1, Math.ceil(dist / 1.2));
       for (var i = 1; i <= n; i++) {
         var t = i / n;
-        stamp(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, amt / n * 2.4, 7);
+        stamp(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, amt / n * 2.4, 12);   // 마지막 숫자 = 퍼지는 범위(칸)
       }
     }
 
@@ -401,7 +401,7 @@
         k = y * gw + x;
         var l = M[y * gw + Math.max(0, x - 1)], r = M[y * gw + Math.min(gw - 1, x + 1)];
         var u = M[Math.max(0, y - 1) * gw + x], d = M[Math.min(gh - 1, y + 1) * gw + x];
-        var v = (M[k] * 0.6 + (l + r + u + d) * 0.1) * DECAY;
+        var v = (M[k] * 0.52 + (l + r + u + d) * 0.12) * DECAY;   // 옆으로 조금 더 번짐
         M2[k] = v; if (v > maxv) maxv = v;
       }
       var tmp = M; M = M2; M2 = tmp;
