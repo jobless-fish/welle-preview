@@ -312,6 +312,8 @@ details.privacy .terms { border: 0; border-top: 1px solid var(--line); height: 2
    (진행도 --p 와 위쪽 확장 --ext 는 스크립트가 스크롤에 맞춰 넣음)
 ============================================================ */
 .js-hero .hero { aspect-ratio: auto; max-height: none; height: var(--hero-h); }
+/* 페이지가 짧아도 물결 전환을 끝까지 볼 수 있게 최소 길이 확보 */
+.js-hero { min-height: calc(100vh + var(--span, 400px) + 2px); }
 /* 사진을 헤더 뒤까지 위로 늘림 (스크롤할수록 줄어듦) */
 .js-hero .hero__slide, .js-hero .hero__shade { top: calc(-1 * var(--ext, 0px)); }
 

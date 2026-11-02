@@ -25,7 +25,7 @@
       var y = window.scrollY;
       var home = document.body.classList.contains('home');
       var full = parseFloat(getComputedStyle(root).getPropertyValue('--header-h')) || 190;
-      var down = home ? full + 60 : 80, up = home ? full + 10 : 20;   // 홈은 물결이 다 덮인 뒤부터 줄어듦
+      var down = home ? full * 2 + 60 : 80, up = home ? full * 2 + 10 : 20;   // 홈은 물결이 다 덮인 뒤부터 줄어듦
       if (!scrolled && y > down) { scrolled = true; header.classList.add('is-scrolled'); }
       else if (scrolled && y < up) { scrolled = false; header.classList.remove('is-scrolled'); }
     };
@@ -181,7 +181,9 @@
       var w = root.clientWidth, h = w * 2 / 3;
       if (window.innerWidth > 760) h = Math.min(h, window.innerHeight - headerFull() + 40);
       root.style.setProperty('--hero-h', Math.round(h) + 'px');
+      root.style.setProperty('--span', Math.round(headerFull() * SPAN) + 'px');
     }
+    var SPAN = 2;   // 전환에 쓰는 스크롤 거리 = 헤더 높이 × SPAN (클수록 천천히)
     sizeHero();
     body.classList.add('js-hero');
 
@@ -190,19 +192,19 @@
 
     function render() {
       ticking = false;
-      var H = headerFull();                       // 펼쳐진 헤더 높이 = 전환이 끝나는 스크롤 거리
+      var H = headerFull();                       // 펼쳐진 헤더 높이
       var y = Math.max(0, window.scrollY);
-      var p = Math.min(1, y / H);                 // 0 = 사진 꽉 참, 1 = 흰 헤더
+      var p = Math.min(1, y / (H * SPAN));        // 0 = 사진 꽉 참, 1 = 흰 헤더
       var e = p * p * (3 - 2 * p);                // 부드러운 곡선
 
-      // 사진 윗부분을 헤더 뒤까지 늘림: 스크롤해도 사진 윗변은 화면 맨 위에 붙어 있다가 p=1 에서 원래 자리로
+      // 사진 윗부분을 헤더 뒤까지 늘림: 전환하는 동안 사진은 페이지보다 천천히 올라가다가 p=1 에서 원래 자리로
       hero.style.setProperty('--ext', (H * (1 - p)).toFixed(1) + 'px');
 
       // 흰 물결: 아래 경계가 0 → 헤더 높이까지 내려오며 출렁임 (중간에 가장 크게)
       var W = header.clientWidth || root.clientWidth, Hc = header.offsetHeight;
       var base = Hc * e;
       var amp = Math.sin(Math.PI * p) * (W < 700 ? 24 : 40);
-      var ph = y * 0.018;
+      var ph = y * 0.018 / SPAN;
       var d = 'M0,0 H' + W + ' ';
       for (var x = W; x >= -0.1; x -= W / 48) {
         var u = x / W;
@@ -235,7 +237,7 @@
     window.addEventListener('resize', function () { sizeHero(); schedule(); });
     window.addEventListener('load', function () { sizeHero(); schedule(); });
     if (window.ResizeObserver) new ResizeObserver(schedule).observe(header);
-    if (cue) cue.addEventListener('click', function () { window.scrollTo({ top: headerFull(), behavior: 'smooth' }); });
+    if (cue) cue.addEventListener('click', function () { window.scrollTo({ top: headerFull() * SPAN, behavior: 'smooth' }); });
     render();
   }
 
