@@ -134,7 +134,7 @@ for a in albums:
     for k in (len(ph) // 4, (len(ph) * 3) // 4):
         flow_pick.append((a["id"], a["title"], ph[k]))
 flow_items = "".join(
-    f'<a href="album-{aid}.html" aria-label="{html.escape(t)} 앨범 보기"><img src="{up(f, 520)}" alt="" loading="lazy"></a>'
+    f'<a href="album-{aid}.html" aria-label="{html.escape(t)} 앨범 보기"><img src="{up(f, 520)}" alt="" decoding="async"></a>'
     for aid, t, f in flow_pick)
 
 home_body = f"""
