@@ -12,10 +12,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdn-optimized.imweb.me">
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/style.css?v=eb3a5c49">
+<link rel="stylesheet" href="assets/css/style.css?v=68f47f02">
 
 </head>
-<body>
+<body class="home">
 <header class="site-header">
   <div class="site-header__inner">
     <a class="logo" href="index.html" aria-label="Welle Fotografien 홈"><img src="assets/img/logo.svg" alt="Welle Fotografien" width="860" height="510"></a>
@@ -27,6 +27,9 @@
 
 <section class="hero" aria-label="대표 사진">
   <div class="hero__slide is-active"><img src="https://cdn.imweb.me/thumbnail/20221028/01dc0d6887bde.jpg" alt="" width="1417" height="944" style="--fx:50%;--fy:100%" fetchpriority="high"></div><div class="hero__slide"><img data-src="https://cdn.imweb.me/thumbnail/20221028/13ce7d6670390.jpg" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" width="1417" height="944" style="--fx:52%;--fy:38%" ></div><div class="hero__slide"><img data-src="https://cdn.imweb.me/thumbnail/20221028/85e99e32997b5.jpg" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" width="1417" height="944" style="--fx:70%;--fy:55%" ></div><div class="hero__slide"><img data-src="https://cdn.imweb.me/thumbnail/20221028/97eb942cfe2b8.jpg" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" width="1417" height="944" style="--fx:78%;--fy:80%" ></div><div class="hero__slide"><img data-src="https://cdn.imweb.me/thumbnail/20221028/a0da35ef9aa74.jpg" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" width="1417" height="944" style="--fx:55%;--fy:36%" ></div><div class="hero__slide"><img data-src="https://cdn.imweb.me/thumbnail/20221028/80cb9a5c5b443.jpg" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" width="1417" height="944" style="--fx:48%;--fy:65%" ></div><div class="hero__slide"><img data-src="https://cdn.imweb.me/thumbnail/20221028/a69d082147bcd.jpg" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" width="1417" height="944" style="--fx:52%;--fy:45%" ></div><div class="hero__slide"><img data-src="https://cdn.imweb.me/thumbnail/20221028/bdcd999795096.jpg" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" width="1417" height="944" style="--fx:52%;--fy:78%" ></div><div class="hero__slide"><img data-src="https://cdn.imweb.me/thumbnail/20221028/4aafe092e3fb3.jpg" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" width="1417" height="944" style="--fx:32%;--fy:80%" ></div><div class="hero__slide"><img data-src="https://cdn.imweb.me/thumbnail/20221028/3e225db7789e7.jpg" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" width="1417" height="944" style="--fx:48%;--fy:68%" ></div>
+  <div class="hero__shade" aria-hidden="true"></div>
+  <svg class="hero__wave" viewBox="0 0 1000 90" preserveAspectRatio="none" aria-hidden="true"><path d=""/></svg>
+  <button class="hero__cue" type="button">Scroll</button>
   <div class="hero__dots"></div>
 </section>
 <section class="insta container">
@@ -48,7 +51,7 @@
   <div class="copy">© 2021 Welle Fotografien All Rights Reserved.</div>
 </footer>
 <div class="toast" role="status" aria-live="polite"></div>
-<script src="assets/js/site.js?v=54920879"></script>
+<script src="assets/js/site.js?v=446ca019"></script>
 <!-- ============================================================
   Welle Fotografien · 물속 로고 인트로
   - 외부 라이브러리 없음 (순수 WebGL)
@@ -75,6 +78,9 @@
     minShow: 1.4,            // 최소 노출 시간(초)
     interactTime: 2.0,       // 마우스·터치에 물이 반응하는 시간(초). 이후 잉크가 퍼지며 넘어감
     duration: 5.6,           // 잉크가 퍼지며 페이지가 드러나는 시간(초)
+    rushDuration: 3.0,       // 스크롤·스와이프로 넘길 때의 전환 시간(초, 기다림 없이 바로 시작)
+    rushMinShow: 0.5,        // 스크롤로 넘길 때 최소 노출 시간(초)
+    unlockAt: 0.4,           // 전환이 이 비율만큼 진행되면 페이지 스크롤·클릭을 바로 풀어줌
     oncePerSession: true,    // true면 같은 탭에서 한 번만 표시
     zIndex: 2147483000,
     redirectUrl: ''  // 인트로가 끝나면 이동할 주소 ('' 이면 이동 없이 현재 페이지가 드러남)
@@ -155,6 +161,16 @@
   wrap.appendChild(cv);
 
   var prevOverflow = '';
+  window.__inkIntroActive = true;
+  function emit(name) { try { window.dispatchEvent(new Event(name)); } catch (e) {} }
+  var unlocked = false;
+  function unlock() {   // 잉크가 걷히기 시작하면 바로 페이지를 쓸 수 있게
+    if (unlocked) return; unlocked = true;
+    wrap.style.pointerEvents = 'none';
+    document.documentElement.style.overflow = prevOverflow || '';
+    window.__inkIntroActive = false;
+    emit('inkintro:done');
+  }
   function mount() {
     document.body.appendChild(wrap);
     prevOverflow = document.documentElement.style.overflow;
@@ -179,8 +195,17 @@
     ripples.push(lastRip);
     if (ripples.length > MAXR) ripples.shift();
   }
+  var rushed = false, touchY0 = null;
+  function isScrollGesture(e) {
+    if (e.type === 'wheel') return Math.abs(e.deltaY) > 4;
+    if (e.type === 'keydown') return /^(ArrowDown|ArrowUp|PageDown|PageUp|Space| |End|Home)$/.test(e.key || e.code);
+    if (e.type === 'touchstart' && e.touches[0]) { touchY0 = e.touches[0].clientY; return false; }
+    if (e.type === 'touchmove' && e.touches[0] && touchY0 !== null) return Math.abs(e.touches[0].clientY - touchY0) > 40;
+    return false;
+  }
   function onInput(e) {
     if (started || finished) return;
+    if (!rushed && isScrollGesture(e)) rushed = true;
     var x, y, strong = /down|start/.test(e.type);
     var tp = e.touches && e.touches[0];
     if (tp) { x = tp.clientX; y = tp.clientY; }
@@ -199,8 +224,8 @@
     finished = true;
     evs.forEach(function (n) { window.removeEventListener(n, onInput); });
     if (CONFIG.redirectUrl) { try { sessionStorage.setItem('inkIntroSeen', '1'); } catch (e) {} go(); return; }
+    unlock();
     if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
-    document.documentElement.style.overflow = prevOverflow || '';
     try { sessionStorage.setItem('inkIntroSeen', '1'); } catch (e) {}
     if (gl) { var ext = gl.getExtension('WEBGL_lose_context'); if (ext) ext.loseContext(); }
   }
@@ -593,17 +618,21 @@
 
   function ease(x) { return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }
 
-  var startAt = -1, firstFrame = true;
+  var startAt = -1, firstFrame = true, dur = CONFIG.duration;
   function frame() {
     if (finished) return;
     resize();
     var t = now();
     var shown = readyAt >= 0 ? t - readyAt : 0;
 
-    if (interactAt >= 0 && !started && shown >= CONFIG.minShow && t - interactAt >= CONFIG.interactTime) {
-      started = true; startAt = t;
+    if (!started && readyAt >= 0 && (
+          (rushed && shown >= CONFIG.rushMinShow) ||
+          (interactAt >= 0 && shown >= CONFIG.minShow && t - interactAt >= CONFIG.interactTime))) {
+      started = true; startAt = t; dur = rushed ? CONFIG.rushDuration : CONFIG.duration;
+      emit('inkintro:reveal');
     }
-    var raw = started ? Math.min((t - startAt) / CONFIG.duration, 1) : 0;
+    var raw = started ? Math.min((t - startAt) / dur, 1) : 0;
+    if (raw > CONFIG.unlockAt) unlock();
 
     gl.uniform1f(U.uTime, t);
     gl.uniform1f(U.uP, ease(raw));
@@ -643,7 +672,9 @@
     (function wait() {
       if (finished) return;
       var tn = now();
-      if (interactAt >= 0 && tn - readyAt >= CONFIG.minShow && tn - interactAt >= CONFIG.interactTime) {
+      if ((rushed && tn - readyAt >= CONFIG.rushMinShow) ||
+          (interactAt >= 0 && tn - readyAt >= CONFIG.minShow && tn - interactAt >= CONFIG.interactTime)) {
+        emit('inkintro:reveal'); unlock();
         wrap.style.opacity = '0';
         wrap.style.filter = 'blur(12px)';
         setTimeout(finish, 1300);

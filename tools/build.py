@@ -64,7 +64,7 @@ INSTA_ICON = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
               '<circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>')
 
 
-def page(title, active, body, extra_head="", extra_body=""):
+def page(title, active, body, extra_head="", extra_body="", body_class=""):
     nav = "".join(
         f'<a href="{href}"{" aria-current=\"page\"" if label == active else ""}>{label}</a>'
         for href, label in NAV)
@@ -86,7 +86,7 @@ def page(title, active, body, extra_head="", extra_body=""):
 <link rel="stylesheet" href="assets/css/style.css?v={CSS_V}">
 {extra_head}
 </head>
-<body>
+<body{f' class="{body_class}"' if body_class else ""}>
 <header class="site-header">
   <div class="site-header__inner">
     <a class="logo" href="index.html" aria-label="Welle Fotografien 홈"><img src="assets/img/logo.svg" alt="Welle Fotografien" width="860" height="510"></a>
@@ -137,6 +137,9 @@ insta_items = "".join(
 home_body = f"""
 <section class="hero" aria-label="대표 사진">
   {''.join(slides)}
+  <div class="hero__shade" aria-hidden="true"></div>
+  <svg class="hero__wave" viewBox="0 0 1000 90" preserveAspectRatio="none" aria-hidden="true"><path d=""/></svg>
+  <button class="hero__cue" type="button">Scroll</button>
   <div class="hero__dots"></div>
 </section>
 <section class="insta container">
@@ -149,7 +152,7 @@ home_body = f"""
 </section>
 """
 intro = (ROOT / "tools" / "intro-snippet.html").read_text(encoding="utf-8")
-write("index.html", page("", "Home", home_body, extra_body=intro))
+write("index.html", page("", "Home", home_body, extra_body=intro, body_class="home"))
 
 # ---------- Gallery ----------
 cards = "".join(f"""
