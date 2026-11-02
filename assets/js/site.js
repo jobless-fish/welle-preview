@@ -1,14 +1,41 @@
 /* Welle Fotografien — 공통 스크립트 */
 (function () {
-  // data-water 링크를 누르면 누른 위치를 기억 → 다음 페이지가 그 자리에서부터 번지듯 드러남 (style.css 의 페이지 전환)
+  // data-water 링크: 다음 페이지를 화면 위에 보이지 않게 먼저 불러오고,
+  // 사진까지 다 준비되면 누른 자리에서부터 번지듯 드러낸 뒤 주소를 넘김 (늦게 열려도 효과가 빠지지 않음)
   document.addEventListener('click', function (e) {
     var a = e.target.closest && e.target.closest('a[data-water]');
     if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    var x = e.clientX / window.innerWidth, y = 1 - e.clientY / window.innerHeight;
-    if (!e.clientX && !e.clientY) { x = .5; y = .5; }
-    try { sessionStorage.setItem('welleWater', JSON.stringify({ x: x, y: y })); } catch (err) {}
-    // 기본 이동 그대로 진행
+    if (document.querySelector('.page-reveal')) { e.preventDefault(); return; }   // 이미 진행 중
+    e.preventDefault();
+    var href = a.href, done = false;
+    var fr = document.createElement('iframe');
+    fr.className = 'page-reveal';
+    fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
+    var cx = e.clientX || window.innerWidth / 2, cy = e.clientY || window.innerHeight / 2;
+    fr.style.setProperty('--wx', (cx / window.innerWidth * 100).toFixed(1) + '%');
+    fr.style.setProperty('--wy', (cy / window.innerHeight * 100).toFixed(1) + '%');
+    fr.src = href;
+    document.body.appendChild(fr);
+    document.documentElement.classList.add('is-leaving');
+    function leave() { window.location.href = href; }
+    function reveal() {
+      if (done) return; done = true;
+      requestAnimationFrame(function () {
+        fr.classList.add('is-go');
+        setTimeout(leave, 1950);
+      });
+    }
+    // 사진까지 다 불러오면 'load' — 그때 드러냄
+    fr.addEventListener('load', function () { setTimeout(reveal, 60); });
+    // 너무 오래 걸리면 효과 없이 바로 이동
+    setTimeout(function () { if (!done) { done = true; leave(); } }, 5000);
+  });
+  // 뒤로가기로 돌아왔을 때 남아 있는 덮개 정리
+  window.addEventListener('pageshow', function (e) {
+    if (!e.persisted) return;
+    document.querySelectorAll('.page-reveal').forEach(function (n) { n.remove(); });
+    document.documentElement.classList.remove('is-leaving');
   });
   // 마우스를 올리면 다음 페이지를 미리 받아 둠 → 넘어가는 순간 빈틈이 줄어듦
   var prefetched = {};
