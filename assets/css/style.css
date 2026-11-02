@@ -439,13 +439,22 @@ details.privacy .terms { border: 0; border-top: 1px solid var(--line); height: 2
 .flow__row img { height: clamp(170px, 22vw, 300px); width: auto; display: block; transition: transform .8s ease, opacity .3s; }
 .flow__row a:hover img { transform: scale(1.03); }
 @keyframes flow { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+/* 모바일: 흐르는 사진 위에 흰 'Gallery' 글자를 겹쳐 보여줌 */
 .flow__cta {
-  display: table; margin: clamp(26px, 4vw, 40px) auto 0;
-  font: 400 clamp(22px, 6vw, 28px)/1 "Domine", var(--serif); letter-spacing: .04em; color: var(--ink);
-  padding: 10px 6px;
+  position: absolute; left: 50%; top: 50%; z-index: 2; transform: translate(-50%, -50%);
+  font: 400 clamp(30px, 9vw, 40px)/1 "Domine", var(--serif); letter-spacing: .03em; color: #fff; white-space: nowrap;
+  text-shadow: 0 2px 4px rgba(0,0,0,.45), 0 4px 22px rgba(0,0,0,.35);
+  padding: 14px 18px;
 }
-.flow__cta span { display: inline-block; margin-left: .25em; font-size: .8em; transition: transform .3s ease; }
+.flow__cta span { display: inline-block; margin-left: .22em; font-size: .72em; transition: transform .3s ease; }
 .flow__cta:hover span { transform: translateX(5px); }
+@media (max-width: 760px) {
+  .flow { padding: 14px 0 22px; }
+  .flow__row img { height: 240px; }
+  /* 글자가 잘 읽히도록 사진 띠 가운데를 살짝 어둡게 */
+  .flow__stage::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background: radial-gradient(ellipse 60% 55% at 50% 50%, rgba(0,0,0,.22), transparent 75%); }
+}
 @media (prefers-reduced-motion: reduce) { .flow__track { animation: none; } .flow { overflow-x: auto; } }
 
 /* 마우스를 올리면: 사진은 계속 흐르고, 위에 블러 막 + 'Gallery' 표시 + 물결 */

@@ -281,11 +281,27 @@
     var mb = 0, lastY = window.scrollY, lastT = performance.now();
 
     function headerFull() { return parseFloat(getComputedStyle(root).getPropertyValue('--header-h')) || 190; }
+    var mainEl = document.querySelector('main');
+    var mobH = 0, mobW = 0;
     function sizeHero() {
-      var w = root.clientWidth, h = w * 2 / 3;
-      if (window.innerWidth > 760) h = Math.min(h, window.innerHeight - headerFull() + 40);
+      var w = root.clientWidth, h = w * 2 / 3, H = headerFull();
+      if (window.innerWidth > 760) {
+        h = Math.min(h, window.innerHeight - H + 40);
+      } else {
+        // 모바일: 사진이 화면 대부분을 채우도록 (아래에 흐르는 사진이 살짝 보이게)
+        // 주소창이 숨었다 나타날 때 높이가 출렁이지 않도록 폭이 바뀔 때만 다시 계산
+        if (w !== mobW || !mobH) { mobW = w; mobH = window.innerHeight; }
+        h = Math.max(h, mobH - H - 96);
+      }
       root.style.setProperty('--hero-h', Math.round(h) + 'px');
-      root.style.setProperty('--span', Math.round(headerFull() * SPAN) + 'px');
+      // 전환 거리: 기본은 헤더 높이 × 2, 페이지가 짧으면 그만큼 줄여서 아래에 빈 여백이 생기지 않게
+      SPAN = 2;
+      if (mainEl) {
+        var natural = mainEl.getBoundingClientRect().bottom + window.scrollY;
+        var room = natural - window.innerHeight;
+        SPAN = Math.max(1.1, Math.min(2, room / H));
+      }
+      root.style.setProperty('--span', Math.round(H * SPAN) + 'px');
     }
     var SPAN = 2;   // 전환에 쓰는 스크롤 거리 = 헤더 높이 × SPAN (클수록 천천히)
     sizeHero();
@@ -580,7 +596,7 @@
         if (id === prev) return;
         setTile(tile, prev);
         setBig(id);
-        if (!wide()) gx.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (!wide() && window.scrollY > 0) window.scrollTo({ top: 0, behavior: 'smooth' });   // 큰 사진이 헤더에 가리지 않게 맨 위로
       });
     });
 

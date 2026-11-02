@@ -165,8 +165,8 @@ home_body = f"""
       <canvas class="flow__ripple" aria-hidden="true"></canvas>
       <span class="flow__label">Gallery <span aria-hidden="true">→</span></span>
     </a>
+    <a class="flow__cta" href="gallery.html" data-water>Gallery <span aria-hidden="true">→</span></a>
   </div>
-  <a class="flow__cta" href="gallery.html" data-water>Gallery <span aria-hidden="true">→</span></a>
 </section>
 """
 intro = (ROOT / "tools" / "intro-snippet.html").read_text(encoding="utf-8")
