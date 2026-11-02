@@ -111,7 +111,7 @@ main { min-height: 50vh; }
   position: absolute; left: clamp(16px, 2.6vw, 36px); top: 50%; z-index: 3;
   transform: translateY(-50%);
   display: flex; flex-direction: column; align-items: flex-start; gap: 0;
-  filter: drop-shadow(0 0 1px rgba(0,0,0,.45)) drop-shadow(0 1px 6px rgba(0,0,0,.25));
+  filter: drop-shadow(0 0 1px rgba(0,0,0,.6)) drop-shadow(0 0 4px rgba(0,0,0,.25));
 }
 .hero__count {
   font: italic 400 15px/1 var(--serif); letter-spacing: .06em; color: #fff;
@@ -123,11 +123,11 @@ main { min-height: 50vh; }
   background: none; cursor: pointer;
 }
 .hero__dots button::before, .hero__dots button i {
-  content: ""; position: absolute; left: 0; top: 6px; height: 1px; border-radius: 1px;
+  content: ""; position: absolute; left: 0; top: 5.5px; height: 2px; border-radius: 2px;
 }
-.hero__dots button::before { width: 12px; background: rgba(255,255,255,.55); transition: width .45s ease, background .3s; }
+.hero__dots button::before { width: 12px; background: rgba(255,255,255,.72); transition: width .45s ease, background .3s; }
 .hero__dots button:hover::before { width: 20px; background: rgba(255,255,255,.85); }
-.hero__dots button.is-active::before { width: 34px; background: rgba(255,255,255,.4); }
+.hero__dots button.is-active::before { width: 34px; background: rgba(255,255,255,.45); }
 .hero__dots button i { width: 0; background: #fff; display: block; }
 .hero.is-playing .hero__dots button.is-active i { animation: heroFill var(--slide-ms, 5000ms) linear forwards; }
 .hero:not(.is-playing) .hero__dots button.is-active i { width: 34px; }
@@ -135,7 +135,7 @@ main { min-height: 50vh; }
 @media (max-width: 760px) {
   .hero__count { font-size: 13px; margin-bottom: 8px; }
   .hero__dots button { width: 26px; height: 10px; }
-  .hero__dots button::before, .hero__dots button i { top: 4.5px; }
+  .hero__dots button::before, .hero__dots button i { top: 4px; }
   .hero__dots button::before { width: 9px; }
   .hero__dots button.is-active::before { width: 26px; }
   .hero:not(.is-playing) .hero__dots button.is-active i { width: 26px; }
@@ -145,19 +145,19 @@ main { min-height: 50vh; }
 
 /* 사진 위 하단 정보 — 옅은 흰 글씨 + 얇은 그림자 테두리로 어떤 색 위에서도 읽힘 */
 .hero__info {
-  position: absolute; left: 0; right: 0; bottom: 18px; z-index: 3;
-  padding: 0 var(--gutter); text-align: center; pointer-events: none;
+  position: absolute; right: clamp(16px, 2.6vw, 36px); bottom: 18px; z-index: 3;
+  max-width: min(440px, 46%); text-align: right; pointer-events: none;
   color: rgba(255,255,255,.82); font-size: 11px; line-height: 1.7; letter-spacing: .01em;
   text-shadow: 0 0 1px rgba(0,0,0,.55), 0 0 2px rgba(0,0,0,.35), 0 1px 8px rgba(0,0,0,.3);
 }
 .hero__info a { pointer-events: auto; color: inherit; }
-.hero__info .row { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 12px; }
+.hero__info .row { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 10px; }
 .hero__info .ig { display: inline-flex; align-items: center; gap: 6px; font: 400 12px/1 var(--serif); letter-spacing: .08em; margin-bottom: 6px; }
 .hero__info .ig svg { width: 14px; height: 14px; filter: drop-shadow(0 0 1px rgba(0,0,0,.55)); }
 .hero__info .copy { font: 400 11px/1.6 var(--serif); letter-spacing: .05em; opacity: .85; }
 @media (max-width: 760px) {
-  .hero__info { font-size: 9.5px; line-height: 1.6; bottom: 10px; }
-  .hero__info .row { gap: 0 8px; }
+  .hero__info { font-size: 9px; line-height: 1.55; bottom: 10px; max-width: 64%; }
+  .hero__info .row { gap: 0 7px; }
   .hero__info .ig { font-size: 11px; margin-bottom: 3px; }
   .hero__info .copy { font-size: 9.5px; }
 }
