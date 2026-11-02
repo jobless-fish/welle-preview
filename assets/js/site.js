@@ -335,8 +335,8 @@
         '<feFlood flood-color="rgb(128,128,128)" result="flat"/>' +
         '<feImage result="map0" preserveAspectRatio="none"/>' +
         '<feMerge result="map1"><feMergeNode in="flat"/><feMergeNode in="map0"/></feMerge>' +
-        '<feGaussianBlur in="map1" stdDeviation="5" result="map"/>' +
-        '<feDisplacementMap in="SourceGraphic" in2="map" scale="14" xChannelSelector="R" yChannelSelector="G"/>' +
+        '<feGaussianBlur in="map1" stdDeviation="6" result="map"/>' +
+        '<feDisplacementMap in="SourceGraphic" in2="map" scale="38" xChannelSelector="R" yChannelSelector="G"/>' +
       '</filter>';
     document.body.appendChild(host);
     var filt = host.querySelector('filter'), feImg = host.querySelector('feImage'), feDisp = host.querySelector('feDisplacementMap');
@@ -347,8 +347,9 @@
     // 그 세기만큼 천천히 흘러가는 불규칙한 물결 무늬(노이즈)로 사진을 일렁이게 함 → 동그란 고리 없음
     var CELL = 6, gw = 0, gh = 0, M = null, M2 = null, H = null, mImg = null, sImg = null;
     var running = false, inside = false, last = null, pending = [];
-    var DECAY = 0.965;           // 작을수록 빨리 가라앉음
-    var STRENGTH = 0.55;         // 흔들림 세기
+    var DECAY = 0.984;           // 작을수록 빨리 가라앉음 (크면 오래 넘실댐)
+    var STRENGTH = 1.5;          // 출렁임 크기
+    var FLOW = 0.12;             // 물결 무늬가 흘러가는 속도 (작을수록 느긋함)
 
     function setup() {
       var r = stage.getBoundingClientRect();
@@ -386,7 +387,7 @@
       var dist = Math.hypot(x1 - x0, y1 - y0), n = Math.max(1, Math.ceil(dist / 1.2));
       for (var i = 1; i <= n; i++) {
         var t = i / n;
-        stamp(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, amt / n * 2.2, 4.5);
+        stamp(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, amt / n * 2.4, 7);
       }
     }
 
@@ -416,7 +417,8 @@
       for (y = 0; y < gh; y++) for (x = 0; x < gw; x++) {
         k = y * gw + x;
         if (M[k] < 0.002) { H[k] = 0; continue; }
-        var n = noise(x * 0.16 + t * 0.35, y * 0.22 - t * 0.25) + 0.5 * noise(x * 0.33 - t * 0.5, y * 0.4 + t * 0.4);
+        // 크고 느린 물결 + 아주 옅은 잔결 → 잘게 떨리지 않고 묵직하게 넘실댐
+        var n = noise(x * 0.075 + t * FLOW, y * 0.11 - t * FLOW * 0.7) + 0.3 * noise(x * 0.15 - t * FLOW * 1.2, y * 0.2 + t * FLOW);
         H[k] = n * M[k] * STRENGTH * 4;
       }
 
@@ -427,12 +429,12 @@
         var gx = H[y * gw + Math.min(gw - 1, x + 1)] - H[y * gw + Math.max(0, x - 1)];
         var gy = H[Math.min(gh - 1, y + 1) * gw + x] - H[Math.max(0, y - 1) * gw + x];
         var p = k * 4;
-        md[p] = Math.max(0, Math.min(255, 128 + gx * 120));
-        md[p + 1] = Math.max(0, Math.min(255, 128 + gy * 120));
+        md[p] = Math.max(0, Math.min(255, 128 + gx * 170));
+        md[p + 1] = Math.max(0, Math.min(255, 128 + gy * 170));
         md[p + 2] = 128; md[p + 3] = 255;
         var light = -gx * 0.55 - gy * 0.85;
-        if (light > 0) { sd[p] = sd[p + 1] = sd[p + 2] = 255; sd[p + 3] = Math.min(80, light * 260); }
-        else { sd[p] = 20; sd[p + 1] = 35; sd[p + 2] = 50; sd[p + 3] = Math.min(30, -light * 110); }
+        if (light > 0) { sd[p] = sd[p + 1] = sd[p + 2] = 255; sd[p + 3] = Math.min(120, light * 300); }
+        else { sd[p] = 20; sd[p + 1] = 35; sd[p + 2] = 50; sd[p + 3] = Math.min(50, -light * 140); }
       }
       sctx.putImageData(sImg, 0, 0);
       mctx.putImageData(mImg, 0, 0);
@@ -462,7 +464,7 @@
       if (last) {
         var dt = Math.max(8, cur.t - last.t);
         var speed = Math.hypot(cur.x - last.x, cur.y - last.y) / dt;      // 칸/ms
-        var amt = Math.min(0.9, 0.25 + speed * 3);                          // 빨리 휘저을수록 조금 더 강하게
+        var amt = Math.min(1, 0.45 + speed * 3);                            // 빨리 휘저을수록 조금 더 강하게
         pending.push([last.x, last.y, cur.x, cur.y, amt]);
       }
       last = cur;
