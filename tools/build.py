@@ -84,7 +84,12 @@ def page(title, active, body, extra_head="", extra_body="", body_class=""):
 <link rel="preconnect" href="https://cdn-optimized.imweb.me">
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/style.css?v={CSS_V}">
-<script>try{{if(sessionStorage.getItem('welleWater'))document.documentElement.classList.add('water-in')}}catch(e){{}}</script>
+<script>
+/* 이전 페이지에서 data-water 링크로 왔으면: 누른 위치를 전환 효과에 넘김 */
+try{{var w=sessionStorage.getItem('welleWater');if(w){{sessionStorage.removeItem('welleWater');w=JSON.parse(w);var r=document.documentElement;
+r.style.setProperty('--wx',(w.x*100).toFixed(1)+'%');r.style.setProperty('--wy',((1-w.y)*100).toFixed(1)+'%');
+r.classList.add(('onpagereveal' in window)?'water-nav':'page-fade');setTimeout(function(){{r.classList.remove('water-nav','page-fade')}},2000);}}}}catch(e){{}}
+</script>
 {extra_head}
 </head>
 <body{f' class="{body_class}"' if body_class else ""}>
