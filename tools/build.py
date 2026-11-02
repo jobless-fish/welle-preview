@@ -138,8 +138,12 @@ home_body = f"""
 <section class="hero" aria-label="대표 사진">
   {''.join(slides)}
   <div class="hero__shade" aria-hidden="true"></div>
-  <button class="hero__cue" type="button">Scroll</button>
-  <div class="hero__dots"></div>
+  <div class="hero__dots"><div class="hero__count" aria-live="polite">01<small>/ {len(HERO):02d}</small></div></div>
+  <div class="hero__info">
+    <a class="ig" href="{INSTA}" target="_blank" rel="noopener">{INSTA_ICON}{INSTA_HANDLE}</a>
+    <div class="row"><span>상호명: Welle Fotografien</span><span>대표자: 김통일</span><span>연락처: 010-8283-7803</span><span>사업자등록번호: 184-33-00892</span><span>이메일: wellefoto@naver.com</span></div>
+    <div class="copy">© 2021 Welle Fotografien All Rights Reserved.</div>
+  </div>
 </section>
 <section class="insta container">
   <div class="insta__head">

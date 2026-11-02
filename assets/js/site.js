@@ -120,20 +120,33 @@
     slides.forEach(function (_, i) {
       var b = document.createElement('button');
       b.type = 'button';
+      b.innerHTML = '<i></i>';
       b.setAttribute('aria-label', (i + 1) + '번째 사진');
       b.addEventListener('click', function () { show(i); restart(); });
       dotsWrap.appendChild(b);
     });
     var dots = dotsWrap.querySelectorAll('button');
+    var countEl = dotsWrap.querySelector('.hero__count');
+    var SLIDE_MS = 5000;
+    hero.style.setProperty('--slide-ms', SLIDE_MS + 'ms');
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
     function load(img) { if (img && img.dataset.src) { img.src = img.dataset.src; img.removeAttribute('data-src'); } }
     function show(i) {
       slides[cur].classList.remove('is-active'); dots[cur].classList.remove('is-active');
       cur = (i + slides.length) % slides.length;
       load(slides[cur].querySelector('img'));
-      slides[cur].classList.add('is-active'); dots[cur].classList.add('is-active');
+      slides[cur].classList.add('is-active');
+      void dots[cur].offsetWidth;                  // 채움 애니메이션을 처음부터 다시
+      dots[cur].classList.add('is-active');
+      if (countEl) countEl.firstChild.nodeValue = pad(cur + 1);
       load(slides[(cur + 1) % slides.length].querySelector('img'));   // 다음 장 미리
     }
-    function restart() { clearInterval(timer); timer = setInterval(function () { show(cur + 1); }, 5000); }
+    function restart() {
+      clearInterval(timer);
+      hero.classList.add('is-playing');
+      var d = dots[cur]; d.classList.remove('is-active'); void d.offsetWidth; d.classList.add('is-active');
+      timer = setInterval(function () { show(cur + 1); }, SLIDE_MS);
+    }
     show(0);
 
     // 인트로가 덮고 있는 동안에는 넘기지 않음 → 인트로가 걷히면 1번 사진부터 시작
@@ -164,7 +177,7 @@
     var logoImg = header.querySelector('.logo img');
     var navLinks = header.querySelectorAll('.nav a');
     var shade = hero.querySelector('.hero__shade');
-    var cue = hero.querySelector('.hero__cue');
+    var info = hero.querySelector('.hero__info');
 
     // 헤더 뒤에 깔리는 흰 물결 (스크롤한 만큼 위에서부터 차오름)
     var NS = 'http://www.w3.org/2000/svg';
@@ -272,11 +285,12 @@
       });
 
       if (shade) shade.style.opacity = (1 - e).toFixed(3);
-      if (cue) {
-        var co = Math.max(0, 1 - p * 3);
-        cue.style.opacity = co.toFixed(3);
-        cue.style.pointerEvents = co > 0.3 ? 'auto' : 'none';
-      }
+      // 하단 정보와 넘김 표시는 '화면에 보이는 사진 영역' 기준으로 배치
+      var hr = hero.getBoundingClientRect(), vh = window.innerHeight;
+      var visTop = Math.max(hr.top, 0);            // 로고·메뉴 아래부터 (메뉴와 겹치지 않게)
+      var visBot = Math.min(hr.bottom, vh);
+      if (info) info.style.bottom = Math.max(window.innerWidth < 761 ? 10 : 18, hr.bottom - vh + 18) + 'px';
+      if (dotsWrap) dotsWrap.style.top = ((visTop + visBot) / 2 - hr.top) + 'px';
       body.classList.toggle('is-top', p < 0.02);
     }
     function schedule() { if (!ticking) { ticking = true; requestAnimationFrame(render); } }
@@ -285,7 +299,6 @@
     window.addEventListener('resize', function () { sizeHero(); schedule(); });
     window.addEventListener('load', function () { sizeHero(); schedule(); });
     if (window.ResizeObserver) new ResizeObserver(schedule).observe(header);
-    if (cue) cue.addEventListener('click', function () { window.scrollTo({ top: headerFull() * SPAN, behavior: 'smooth' }); });
     render();
   }
 
