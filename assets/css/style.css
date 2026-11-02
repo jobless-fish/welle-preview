@@ -106,46 +106,46 @@ main { min-height: 50vh; }
 }
 .hero__slide.is-active img { transform: scale(1); }
 
-/* 넘김 표시: 사진 왼쪽, 유리 캡슐 안에 세로로 쌓인 물결선
-   - 현재 사진: 길고 굵은 물결이 출렁이며, 다음 사진까지 남은 시간만큼 흰색으로 차오름 */
+/* 넘김 표시: 사진 왼쪽에 세로로 쌓인 '일렁이는 유리 막대'
+   - 막대 하나하나가 반투명 유리(뒤 사진이 흐리게 비침)이고, 위아래 테두리가 물결처럼 일렁임
+     (일렁이는 모양은 스크립트가 clip-path 로 매 프레임 그림)
+   - 현재 사진의 막대는 길고 두꺼워지며, 다음 사진까지 남은 시간만큼 흰빛이 차오름 */
 .hero__dots {
-  position: absolute; left: clamp(14px, 2.4vw, 34px); top: 50%; z-index: 3;
+  position: absolute; left: clamp(16px, 2.6vw, 36px); top: 50%; z-index: 3;
   transform: translateY(-50%);
-  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
-  padding: 14px 12px;
-  border-radius: 999px;
-  background: linear-gradient(160deg, rgba(255,255,255,.22), rgba(255,255,255,.08));
-  border: 1px solid rgba(255,255,255,.38);
-  -webkit-backdrop-filter: blur(12px) saturate(150%);
-          backdrop-filter: blur(12px) saturate(150%);
-  box-shadow: 0 10px 30px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.45), inset 0 -1px 0 rgba(255,255,255,.08);
+  display: flex; flex-direction: column; align-items: flex-start; gap: 7px;
 }
 .hero__dots button {
-  display: block; width: 40px; height: 14px; padding: 0; border: 0; background: none; cursor: pointer;
+  display: block; padding: 3px 0; border: 0; background: none; cursor: pointer;
 }
-.hero__dots svg { display: block; width: 100%; height: 100%; overflow: visible;
-  transform-origin: 0 50%; transform: scale(.5, .7); transition: transform .5s cubic-bezier(.3,.7,.2,1); }
-.hero__dots path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.hero__dots .w-sh { stroke: rgba(0,0,0,.22); stroke-width: 4; vector-effect: non-scaling-stroke; }
-.hero__dots .w-b  { stroke: rgba(255,255,255,.8); stroke-width: 1.7; vector-effect: non-scaling-stroke; transition: stroke .3s; }
-.hero__dots .w-f  { stroke: #fff; stroke-width: 2.4; vector-effect: non-scaling-stroke; stroke-dasharray: 100 100; stroke-dashoffset: 100; }
-.hero__dots button:hover svg { transform: scale(.72, .85); }
-.hero__dots button:hover .w-b { stroke: #fff; }
-.hero__dots button.is-active svg { transform: scale(1, 1); }
-.hero__dots button.is-active .w-b { stroke: rgba(255,255,255,.42); stroke-width: 2.4; }
-.hero__dots button.is-active .w-sh { stroke-width: 4.6; }
-.hero__dots button.is-active path { animation: heroSway 2.6s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 50%; }
-.hero.is-playing .hero__dots button.is-active .w-f { animation: heroFill var(--slide-ms, 5000ms) linear forwards; }
-.hero:not(.is-playing) .hero__dots button.is-active .w-f { stroke-dashoffset: 0; }
-@keyframes heroFill { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
-@keyframes heroSway { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(.55) translateX(1px); } }
+.hero__dots .g {
+  position: relative; display: block; overflow: hidden;
+  width: 20px; height: 8px;
+  background:
+    linear-gradient(180deg,
+      rgba(255,255,255,.85) 0%, rgba(255,255,255,.5) 22%,
+      rgba(255,255,255,.2) 50%, rgba(255,255,255,.12) 72%,
+      rgba(20,30,40,.28) 100%);
+  -webkit-backdrop-filter: blur(5px) saturate(180%) brightness(1.12);
+          backdrop-filter: blur(5px) saturate(180%) brightness(1.12);
+  transition: width .6s cubic-bezier(.3,.7,.2,1), height .6s cubic-bezier(.3,.7,.2,1);
+}
+.hero__dots button:hover .g { width: 28px; }
+.hero__dots button.is-active .g { width: 52px; height: 12px; }
+.hero__dots .f {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(255,255,255,.88) 55%, rgba(225,235,245,.75) 100%);
+}
+.hero.is-playing .hero__dots button.is-active .f { animation: heroFill var(--slide-ms, 5000ms) linear forwards; }
+.hero:not(.is-playing) .hero__dots button.is-active .f { width: 100%; }
+@keyframes heroFill { from { width: 0; } to { width: 100%; } }
 @media (max-width: 760px) {
-  .hero__dots { padding: 10px 9px; gap: 1px; }
-  .hero__dots button { width: 30px; height: 11px; }
+  .hero__dots { gap: 5px; }
+  .hero__dots .g { width: 15px; height: 6px; }
+  .hero__dots button.is-active .g { width: 38px; height: 9px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hero__dots button.is-active svg { animation: none; }
-  .hero.is-playing .hero__dots button.is-active .w-f { animation: none; stroke-dashoffset: 0; }
+  .hero.is-playing .hero__dots button.is-active .f { animation: none; width: 100%; }
 }
 
 /* 사진 위 하단 정보 — 옅은 흰 글씨 + 얇은 그림자 테두리로 어떤 색 위에서도 읽힘 */
