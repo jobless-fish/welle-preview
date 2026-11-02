@@ -343,60 +343,79 @@
 
     var shade = hov.querySelector('.flow__ripple'), sctx = shade.getContext('2d');
     var map = document.createElement('canvas'), mctx = map.getContext('2d');
-    var CELL = 5, gw = 0, gh = 0, hgt = null, mImg = null, sImg = null;
-    var rips = [], running = false, last = null;
+    // 실제 물처럼: 수면을 격자로 나눠 물결이 이웃 칸으로 번져 나가게 계산 (두 버퍼 파동 방정식)
+    var CELL = 5, gw = 0, gh = 0, A = null, B = null, mImg = null, sImg = null;
+    var running = false, inside = false, last = null, pending = [];
+    var DAMP = 0.982;            // 클수록 물결이 오래 남음
 
     function setup() {
       var r = stage.getBoundingClientRect();
-      gw = Math.max(40, Math.round(r.width / CELL)); gh = Math.max(12, Math.round(r.height / CELL));
+      var nw = Math.max(40, Math.round(r.width / CELL)), nh = Math.max(12, Math.round(r.height / CELL));
+      if (nw === gw && nh === gh && A) return;
+      gw = nw; gh = nh;
       map.width = shade.width = gw; map.height = shade.height = gh;
-      hgt = new Float32Array(gw * gh);
+      A = new Float32Array(gw * gh); B = new Float32Array(gw * gh);
       mImg = mctx.createImageData(gw, gh); sImg = sctx.createImageData(gw, gh);
     }
-    function add(x, y, s) {
-      rips.push({ x: x / CELL, y: y / CELL, t: performance.now(), s: s });
-      if (rips.length > 14) rips.shift();
-      if (!running) { running = true; requestAnimationFrame(step); }
+    function wake() { if (!running) { running = true; requestAnimationFrame(step); } }
+
+    // 붓처럼 둥글게 물을 밀어 넣음
+    function stamp(cx, cy, amt, rad) {
+      var x0 = Math.max(1, Math.floor(cx - rad)), x1 = Math.min(gw - 2, Math.ceil(cx + rad));
+      var y0 = Math.max(1, Math.floor(cy - rad)), y1 = Math.min(gh - 2, Math.ceil(cy + rad));
+      for (var y = y0; y <= y1; y++) for (var x = x0; x <= x1; x++) {
+        var d2 = ((x - cx) * (x - cx) + (y - cy) * (y - cy)) / (rad * rad);
+        if (d2 < 1) A[y * gw + x] += amt * (1 - d2) * (1 - d2);
+      }
     }
-    var LIFE = 2400, SPEED = 0.032, WL = 6.5;   // 수명(ms), 퍼지는 속도(칸/ms), 물결 간격(칸)
-    function step(now) {
-      rips = rips.filter(function (r) { return now - r.t < LIFE; });
-      if (!rips.length) {
+    // 지난 위치 → 지금 위치까지 경로 전체를 촘촘히 칠해서 끊김 없이 이어지게
+    function stroke(x0, y0, x1, y1, amt) {
+      var dist = Math.hypot(x1 - x0, y1 - y0), n = Math.max(1, Math.ceil(dist / 0.8));
+      for (var i = 1; i <= n; i++) {
+        var t = i / n;
+        stamp(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, amt / Math.sqrt(n), 2.6);
+      }
+    }
+
+    function step() {
+      // 1) 쌓인 마우스 움직임 반영
+      pending.forEach(function (m) { stroke(m[0], m[1], m[2], m[3], m[4]); });
+      pending.length = 0;
+
+      // 2) 물결 번짐 계산
+      var x, y, k, maxv = 0;
+      for (y = 1; y < gh - 1; y++) for (x = 1; x < gw - 1; x++) {
+        k = y * gw + x;
+        var v = ((A[k - 1] + A[k + 1] + A[k - gw] + A[k + gw]) * 0.5 - B[k]) * DAMP;
+        B[k] = v;
+        if (v > maxv) maxv = v; else if (-v > maxv) maxv = -v;
+      }
+      var tmp = A; A = B; B = tmp;
+
+      if (maxv < 0.004 && !inside) {
         running = false; track.style.filter = ''; sctx.clearRect(0, 0, gw, gh);
+        for (k = 0; k < A.length; k++) { A[k] = 0; B[k] = 0; }
         return;
       }
-      // 1) 물결 높이 계산 — 퍼져 나가는 고리 모양의 물결 묶음
-      var i, x, y, k;
-      for (i = 0; i < hgt.length; i++) hgt[i] = 0;
-      rips.forEach(function (r) {
-        var age = now - r.t, front = 2 + age * SPEED, fade = Math.pow(1 - age / LIFE, 1.4) * r.s;
-        var reach = front + WL * 2.2;
-        var x0 = Math.max(0, Math.floor(r.x - reach)), x1 = Math.min(gw - 1, Math.ceil(r.x + reach));
-        var y0 = Math.max(0, Math.floor(r.y - reach)), y1 = Math.min(gh - 1, Math.ceil(r.y + reach));
-        for (y = y0; y <= y1; y++) for (x = x0; x <= x1; x++) {
-          var d = Math.hypot(x - r.x, y - r.y), q = (d - front) / WL;
-          if (q < -2.4 || q > 2.4) continue;
-          hgt[y * gw + x] += Math.sin(q * Math.PI * 1.4) * Math.exp(-q * q * 0.8) * fade * 0.8;
-        }
-      });
-      // 2) 기울기 → 변위 지도(사진 굴절) + 수면의 빛·그늘
+
+      // 3) 기울기 → 변위 지도(사진 굴절) + 수면의 빛·그늘
       var md = mImg.data, sd = sImg.data;
       for (y = 0; y < gh; y++) for (x = 0; x < gw; x++) {
         k = y * gw + x;
-        var gx = hgt[y * gw + Math.min(gw - 1, x + 1)] - hgt[y * gw + Math.max(0, x - 1)];
-        var gy = hgt[Math.min(gh - 1, y + 1) * gw + x] - hgt[Math.max(0, y - 1) * gw + x];
+        var gx = A[y * gw + Math.min(gw - 1, x + 1)] - A[y * gw + Math.max(0, x - 1)];
+        var gy = A[Math.min(gh - 1, y + 1) * gw + x] - A[Math.max(0, y - 1) * gw + x];
         var p = k * 4;
-        md[p] = Math.max(0, Math.min(255, 128 + gx * 90));
-        md[p + 1] = Math.max(0, Math.min(255, 128 + gy * 90));
+        md[p] = Math.max(0, Math.min(255, 128 + gx * 70));
+        md[p + 1] = Math.max(0, Math.min(255, 128 + gy * 70));
         md[p + 2] = 128; md[p + 3] = 255;
-        var light = -gx * 0.55 - gy * 0.85;          // 왼쪽 위에서 비추는 빛
-        if (light > 0) { sd[p] = sd[p + 1] = sd[p + 2] = 255; sd[p + 3] = Math.min(110, light * 170); }
-        else { sd[p] = 20; sd[p + 1] = 35; sd[p + 2] = 50; sd[p + 3] = Math.min(45, -light * 80); }
+        var light = -gx * 0.55 - gy * 0.85;
+        if (light > 0) { sd[p] = sd[p + 1] = sd[p + 2] = 255; sd[p + 3] = Math.min(110, light * 150); }
+        else { sd[p] = 20; sd[p + 1] = 35; sd[p + 2] = 50; sd[p + 3] = Math.min(45, -light * 70); }
       }
       sctx.putImageData(sImg, 0, 0);
       mctx.putImageData(mImg, 0, 0);
 
-      // 3) 지도를 흐르는 사진 띠 좌표에 맞춰 붙임 (띠는 계속 움직이므로 매번 위치 계산)
+      // 4) 지도를 흐르는 사진 띠 좌표에 맞춰 붙임
       var sr = stage.getBoundingClientRect(), tr = track.getBoundingClientRect();
       var ox = sr.left - tr.left, oy = sr.top - tr.top;
       filt.setAttribute('x', ox); filt.setAttribute('y', oy);
@@ -410,17 +429,27 @@
       requestAnimationFrame(step);
     }
 
-    hov.addEventListener('mouseenter', function () { setup(); last = null; });
+    function toGrid(e) {
+      var r = stage.getBoundingClientRect();
+      return { x: (e.clientX - r.left) / CELL, y: (e.clientY - r.top) / CELL, t: performance.now() };
+    }
+    hov.addEventListener('mouseenter', function (e) { inside = true; setup(); last = toGrid(e); wake(); });
+    hov.addEventListener('mouseleave', function () { inside = false; last = null; });
     hov.addEventListener('mousemove', function (e) {
-      if (!hgt) setup();
-      var r = stage.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
-      if (last && Math.hypot(x - last.x, y - last.y) < 34) return;
-      last = { x: x, y: y };
-      add(x, y, 0.8);
+      if (!A) setup();
+      var cur = toGrid(e);
+      if (last) {
+        var dt = Math.max(8, cur.t - last.t);
+        var speed = Math.hypot(cur.x - last.x, cur.y - last.y) / dt;      // 칸/ms
+        var amt = Math.min(2.2, 0.35 + speed * 9);                          // 빨리 휘저을수록 강하게
+        pending.push([last.x, last.y, cur.x, cur.y, amt]);
+      }
+      last = cur;
+      wake();
     });
     hov.addEventListener('mousedown', function (e) {
-      if (!hgt) setup();
-      var r = stage.getBoundingClientRect(); add(e.clientX - r.left, e.clientY - r.top, 1.3);
+      if (!A) setup();
+      var c = toGrid(e); pending.push([c.x, c.y, c.x, c.y, 3]); wake();
     });
     window.addEventListener('resize', function () { if (running) setup(); });
   })();
