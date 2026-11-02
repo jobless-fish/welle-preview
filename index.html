@@ -66,7 +66,7 @@ r.classList.add(('onpagereveal' in window)?'water-nav':'page-fade');setTimeout(f
   <div class="copy">© 2021 Welle Fotografien All Rights Reserved.</div>
 </footer>
 <div class="toast" role="status" aria-live="polite"></div>
-<script src="assets/js/site.js?v=5bc6b5a5"></script>
+<script src="assets/js/site.js?v=cccf8dc2"></script>
 <!-- ============================================================
   Welle Fotografien · 물속 로고 인트로
   - 외부 라이브러리 없음 (순수 WebGL)
@@ -230,11 +230,14 @@ r.classList.add(('onpagereveal' in window)?'water-nav':'page-fade');setTimeout(f
     if (ripples.length > MAXR) ripples.shift();
   }
   var rushed = false, touchY0 = null;
+  // 바로 넘어가는 동작: 클릭·탭·키보드·스크롤·스와이프
+  // (마우스를 그냥 움직일 때만 물결로 잠시 반응한 뒤 넘어감)
   function isScrollGesture(e) {
     if (e.type === 'wheel') return Math.abs(e.deltaY) > 4;
-    if (e.type === 'keydown') return /^(ArrowDown|ArrowUp|PageDown|PageUp|Space| |End|Home)$/.test(e.key || e.code);
-    if (e.type === 'touchstart' && e.touches[0]) { touchY0 = e.touches[0].clientY; return false; }
-    if (e.type === 'touchmove' && e.touches[0] && touchY0 !== null) return Math.abs(e.touches[0].clientY - touchY0) > 40;
+    if (e.type === 'keydown') return true;
+    if (e.type === 'pointerdown') return true;
+    if (e.type === 'touchstart' && e.touches[0]) { touchY0 = e.touches[0].clientY; return true; }
+    if (e.type === 'touchmove') return true;
     return false;
   }
   function onInput(e) {

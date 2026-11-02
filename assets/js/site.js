@@ -205,8 +205,12 @@
     else startSlides();
 
     // 사진을 누르면 다음 사진 (링크·버튼은 제외)
+    var introDoneAt = 0;
+    window.addEventListener('inkintro:done', function () { introDoneAt = performance.now(); });
     hero.addEventListener('click', function (e) {
       if (e.target.closest('a, button')) return;
+      // 인트로가 걷히는 중이거나 막 끝난 직후의 탭은 무시 (인트로를 넘기려던 탭이 사진까지 넘기지 않게)
+      if (window.__inkIntroActive || performance.now() - introDoneAt < 1500) return;
       show(cur + 1); restart();
     });
 
