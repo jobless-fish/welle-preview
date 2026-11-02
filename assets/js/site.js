@@ -120,7 +120,7 @@
     slides.forEach(function (_, i) {
       var b = document.createElement('button');
       b.type = 'button';
-      b.innerHTML = '<span class="g"><span class="f"></span></span>';
+      b.innerHTML = '<i></i>';
       b.setAttribute('aria-label', (i + 1) + '번째 사진');
       b.addEventListener('click', function () { show(i); restart(); });
       dotsWrap.appendChild(b);
@@ -167,42 +167,6 @@
       sx = null;
     });
 
-    // 유리 막대 일렁임 — 위아래 테두리를 물결 모양으로 매 프레임 다시 그림
-    (function ripple() {
-      var glass = [].map.call(dots, function (d) { return d.querySelector('.g'); });
-      var still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var visible = true;
-      if (window.IntersectionObserver) new IntersectionObserver(function (en) { visible = en[0].isIntersecting; }).observe(hero);
-      function shape(w, h, t, i) {
-        var a = Math.max(0.9, h * 0.2);                // 출렁이는 높이
-        var k = Math.PI * 2 / Math.max(14, w * 0.9);   // 물결 간격
-        var ph = t * 2.6 - i * 0.55;                   // 위에서 아래로 흘러가는 물결
-        var n = Math.max(6, Math.round(w / 3)), top = '', bot = '';
-        for (var j = 0; j <= n; j++) {
-          var x = w * j / n;
-          var yt = a + a * Math.sin(k * x + ph);
-          top += (j ? ' L' : 'M') + x.toFixed(1) + ' ' + yt.toFixed(2);
-        }
-        for (var m = n; m >= 0; m--) {
-          var x2 = w * m / n;
-          var yb = h - a + a * Math.sin(k * x2 + ph + 0.9);
-          bot += ' L' + x2.toFixed(1) + ' ' + yb.toFixed(2);
-        }
-        return 'path("' + top + bot + ' Z")';
-      }
-      function frame(now) {
-        if (visible) {
-          var t = still ? 0 : now / 1000;
-          for (var i = 0; i < glass.length; i++) {
-            var g = glass[i], w = g.offsetWidth, h = g.offsetHeight;
-            var cp = shape(w, h, t, i);
-            g.style.clipPath = cp; g.style.webkitClipPath = cp;
-          }
-        }
-        if (!still) requestAnimationFrame(frame);
-      }
-      requestAnimationFrame(frame);
-    })();
 
     if (document.body.classList.contains('home')) immersive();
   }

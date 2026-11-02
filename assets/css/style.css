@@ -106,47 +106,37 @@ main { min-height: 50vh; }
 }
 .hero__slide.is-active img { transform: scale(1); }
 
-/* 넘김 표시: 사진 왼쪽에 세로로 쌓인 '일렁이는 유리 막대'
-   - 막대 하나하나가 반투명 유리(뒤 사진이 흐리게 비침)이고, 위아래 테두리가 물결처럼 일렁임
-     (일렁이는 모양은 스크립트가 clip-path 로 매 프레임 그림)
-   - 현재 사진의 막대는 길고 두꺼워지며, 다음 사진까지 남은 시간만큼 흰빛이 차오름 */
+/* 넘김 표시: 사진 왼쪽에 세로로 쌓인 짧은 막대
+   - 현재 사진의 막대는 길어지고, 다음 사진까지 남은 시간만큼 흰색으로 차오름 */
 .hero__dots {
   position: absolute; left: clamp(16px, 2.6vw, 36px); top: 50%; z-index: 3;
   transform: translateY(-50%);
-  display: flex; flex-direction: column; align-items: flex-start; gap: 7px;
+  display: flex; flex-direction: column; align-items: flex-start;
+  filter: drop-shadow(0 0 1px rgba(0,0,0,.6)) drop-shadow(0 0 4px rgba(0,0,0,.25));
 }
 .hero__dots button {
-  display: block; padding: 3px 0; border: 0; background: none; cursor: pointer;
+  position: relative; display: block; width: 34px; height: 13px; padding: 0; border: 0;
+  background: none; cursor: pointer;
 }
-.hero__dots .g {
-  position: relative; display: block; overflow: hidden;
-  width: 26px; height: 9px;
-  background:
-    linear-gradient(180deg,
-      rgba(255,255,255,.85) 0%, rgba(255,255,255,.5) 22%,
-      rgba(255,255,255,.2) 50%, rgba(255,255,255,.12) 72%,
-      rgba(20,30,40,.28) 100%);
-  -webkit-backdrop-filter: blur(5px) saturate(180%) brightness(1.12);
-          backdrop-filter: blur(5px) saturate(180%) brightness(1.12);
-  transition: width .6s cubic-bezier(.3,.7,.2,1), height .6s cubic-bezier(.3,.7,.2,1);
+.hero__dots button::before, .hero__dots button i {
+  content: ""; position: absolute; left: 0; top: 5.5px; height: 2px; border-radius: 2px;
 }
-.hero__dots button:hover .g { width: 36px; }
-.hero__dots button.is-active .g { width: 64px; height: 14px; }
-.hero__dots .f {
-  position: absolute; left: 0; top: 0; bottom: 0; width: 0;
-  background: linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(255,255,255,.88) 55%, rgba(225,235,245,.75) 100%);
-}
-.hero.is-playing .hero__dots button.is-active .f { animation: heroFill var(--slide-ms, 5000ms) linear forwards; }
-.hero:not(.is-playing) .hero__dots button.is-active .f { width: 100%; }
-@keyframes heroFill { from { width: 0; } to { width: 100%; } }
+.hero__dots button::before { width: 12px; background: rgba(255,255,255,.72); transition: width .45s ease, background .3s; }
+.hero__dots button:hover::before { width: 20px; background: rgba(255,255,255,.9); }
+.hero__dots button.is-active::before { width: 34px; background: rgba(255,255,255,.45); }
+.hero__dots button i { width: 0; background: #fff; display: block; }
+.hero.is-playing .hero__dots button.is-active i { animation: heroFill var(--slide-ms, 5000ms) linear forwards; }
+.hero:not(.is-playing) .hero__dots button.is-active i { width: 34px; }
+@keyframes heroFill { from { width: 0; } to { width: 34px; } }
 @media (max-width: 760px) {
-  .hero__dots { gap: 5px; }
-  .hero__dots .g { width: 18px; height: 7px; }
-  .hero__dots button.is-active .g { width: 44px; height: 10px; }
+  .hero__dots button { width: 26px; height: 10px; }
+  .hero__dots button::before, .hero__dots button i { top: 4px; }
+  .hero__dots button::before { width: 9px; }
+  .hero__dots button.is-active::before { width: 26px; }
+  .hero:not(.is-playing) .hero__dots button.is-active i { width: 26px; }
+  @keyframes heroFill { from { width: 0; } to { width: 26px; } }
 }
-@media (prefers-reduced-motion: reduce) {
-  .hero.is-playing .hero__dots button.is-active .f { animation: none; width: 100%; }
-}
+@media (prefers-reduced-motion: reduce) { .hero.is-playing .hero__dots button.is-active i { animation: none; width: 100%; } }
 
 /* 사진 위 하단 정보 — 옅은 흰 글씨 + 얇은 그림자 테두리로 어떤 색 위에서도 읽힘 */
 .hero__info {
