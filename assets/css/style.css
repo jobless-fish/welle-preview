@@ -471,6 +471,6 @@ details.privacy .terms { border: 0; border-top: 1px solid var(--line); height: 2
   .flow__stage:hover .flow__label { transform: translateY(0); }
   .flow__label span { display: inline-block; transition: transform .3s ease; }
   .flow__hover:hover .flow__label span { transform: translateX(6px); }
-  .flow__ripple { position: absolute; inset: 6px 0; width: 100%; height: calc(100% - 12px); pointer-events: none; image-rendering: auto; filter: blur(1.5px); }
+  .flow__ripple { position: absolute; inset: 6px 0; width: 100%; height: calc(100% - 12px); pointer-events: none; image-rendering: auto; filter: blur(3px); }
   .flow__cta { display: none; }   /* PC는 마우스를 올리면 뜨는 표시로 대신 */
 }

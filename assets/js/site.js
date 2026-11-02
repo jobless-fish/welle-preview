@@ -334,8 +334,9 @@
       '<filter id="flow-ripple" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" color-interpolation-filters="sRGB">' +
         '<feFlood flood-color="rgb(128,128,128)" result="flat"/>' +
         '<feImage result="map0" preserveAspectRatio="none"/>' +
-        '<feMerge result="map"><feMergeNode in="flat"/><feMergeNode in="map0"/></feMerge>' +
-        '<feDisplacementMap in="SourceGraphic" in2="map" scale="34" xChannelSelector="R" yChannelSelector="G"/>' +
+        '<feMerge result="map1"><feMergeNode in="flat"/><feMergeNode in="map0"/></feMerge>' +
+        '<feGaussianBlur in="map1" stdDeviation="4" result="map"/>' +
+        '<feDisplacementMap in="SourceGraphic" in2="map" scale="16" xChannelSelector="R" yChannelSelector="G"/>' +
       '</filter>';
     document.body.appendChild(host);
     var filt = host.querySelector('filter'), feImg = host.querySelector('feImage'), feDisp = host.querySelector('feDisplacementMap');
@@ -357,7 +358,7 @@
       if (rips.length > 14) rips.shift();
       if (!running) { running = true; requestAnimationFrame(step); }
     }
-    var LIFE = 2200, SPEED = 0.035, WL = 5.2;   // 수명(ms), 퍼지는 속도(칸/ms), 물결 간격(칸)
+    var LIFE = 2400, SPEED = 0.032, WL = 6.5;   // 수명(ms), 퍼지는 속도(칸/ms), 물결 간격(칸)
     function step(now) {
       rips = rips.filter(function (r) { return now - r.t < LIFE; });
       if (!rips.length) {
@@ -375,7 +376,7 @@
         for (y = y0; y <= y1; y++) for (x = x0; x <= x1; x++) {
           var d = Math.hypot(x - r.x, y - r.y), q = (d - front) / WL;
           if (q < -2.4 || q > 2.4) continue;
-          hgt[y * gw + x] += Math.sin(q * Math.PI * 1.6) * Math.exp(-q * q * 0.9) * fade;
+          hgt[y * gw + x] += Math.sin(q * Math.PI * 1.4) * Math.exp(-q * q * 0.8) * fade * 0.8;
         }
       });
       // 2) 기울기 → 변위 지도(사진 굴절) + 수면의 빛·그늘
@@ -385,12 +386,12 @@
         var gx = hgt[y * gw + Math.min(gw - 1, x + 1)] - hgt[y * gw + Math.max(0, x - 1)];
         var gy = hgt[Math.min(gh - 1, y + 1) * gw + x] - hgt[Math.max(0, y - 1) * gw + x];
         var p = k * 4;
-        md[p] = Math.max(0, Math.min(255, 128 + gx * 150));
-        md[p + 1] = Math.max(0, Math.min(255, 128 + gy * 150));
+        md[p] = Math.max(0, Math.min(255, 128 + gx * 90));
+        md[p + 1] = Math.max(0, Math.min(255, 128 + gy * 90));
         md[p + 2] = 128; md[p + 3] = 255;
         var light = -gx * 0.55 - gy * 0.85;          // 왼쪽 위에서 비추는 빛
-        if (light > 0) { sd[p] = sd[p + 1] = sd[p + 2] = 255; sd[p + 3] = Math.min(150, light * 260); }
-        else { sd[p] = 20; sd[p + 1] = 35; sd[p + 2] = 50; sd[p + 3] = Math.min(70, -light * 120); }
+        if (light > 0) { sd[p] = sd[p + 1] = sd[p + 2] = 255; sd[p + 3] = Math.min(110, light * 170); }
+        else { sd[p] = 20; sd[p + 1] = 35; sd[p + 2] = 50; sd[p + 3] = Math.min(45, -light * 80); }
       }
       sctx.putImageData(sImg, 0, 0);
       mctx.putImageData(mImg, 0, 0);
