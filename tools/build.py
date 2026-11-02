@@ -84,6 +84,7 @@ def page(title, active, body, extra_head="", extra_body="", body_class=""):
 <link rel="preconnect" href="https://cdn-optimized.imweb.me">
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/style.css?v={CSS_V}">
+<script>try{{if(sessionStorage.getItem('welleWater'))document.documentElement.classList.add('water-in')}}catch(e){{}}</script>
 {extra_head}
 </head>
 <body{f' class="{body_class}"' if body_class else ""}>
@@ -155,12 +156,12 @@ home_body = f"""
       <div class="flow__row">{flow_items}</div>
       <div class="flow__row" aria-hidden="true">{flow_items.replace('<a ', '<a tabindex="-1" ')}</div>
     </div>
-    <a class="flow__hover" href="gallery.html" aria-label="갤러리로 이동">
+    <a class="flow__hover" href="gallery.html" data-water aria-label="갤러리로 이동">
       <canvas class="flow__ripple" aria-hidden="true"></canvas>
       <span class="flow__label">Gallery <span aria-hidden="true">→</span></span>
     </a>
   </div>
-  <a class="flow__cta" href="gallery.html">Gallery <span aria-hidden="true">→</span></a>
+  <a class="flow__cta" href="gallery.html" data-water>Gallery <span aria-hidden="true">→</span></a>
 </section>
 """
 intro = (ROOT / "tools" / "intro-snippet.html").read_text(encoding="utf-8")
