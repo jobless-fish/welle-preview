@@ -21,12 +21,24 @@ JS_V = ver("assets/js/site.js")
 
 UP = "https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/"
 THUMB = "https://cdn.imweb.me/thumbnail/20221028/"
-INSTA = "https://www.instagram.com/welle_fotografien/"
+INSTA = "https://www.instagram.com/wellefotografien/"
+INSTA_HANDLE = "@wellefotografien"
 KAKAO = "http://pf.kakao.com/_xctKEb"
 
-HERO = ["01dc0d6887bde.jpg", "13ce7d6670390.jpg", "85e99e32997b5.jpg", "97eb942cfe2b8.jpg",
-        "a0da35ef9aa74.jpg", "80cb9a5c5b443.jpg", "a69d082147bcd.jpg", "bdcd999795096.jpg",
-        "4aafe092e3fb3.jpg", "3e225db7789e7.jpg"]
+# 홈 슬라이드: (파일, 인물 가로 위치 %, 세로 위치 %)
+# 화면이 사진보다 납작해서 잘려야 할 때 이 지점을 기준으로 자름
+HERO = [
+    ("01dc0d6887bde.jpg", 50, 100),  # 건물 앞 커플 (맨 아래, 작게)
+    ("13ce7d6670390.jpg", 52, 38),   # 차 안 신부
+    ("85e99e32997b5.jpg", 70, 55),   # 축가
+    ("97eb942cfe2b8.jpg", 78, 80),   # 무대 위 신부
+    ("a0da35ef9aa74.jpg", 55, 62),   # 창가 신부
+    ("80cb9a5c5b443.jpg", 48, 65),   # 버진로드 커플
+    ("a69d082147bcd.jpg", 52, 45),   # 하객 환호 속 커플
+    ("bdcd999795096.jpg", 52, 78),   # 유리홀 커플 (작게)
+    ("4aafe092e3fb3.jpg", 32, 80),   # 꽃장식 앞 커플
+    ("3e225db7789e7.jpg", 48, 68),   # 하객과 커플
+]
 ORDER = [11, 10, 9, 7, 6, 4, 5, 3, 8]   # 현재 사이트의 갤러리 순서
 
 
@@ -86,7 +98,7 @@ def page(title, active, body, extra_head="", extra_body=""):
 {body}
 </main>
 <footer class="site-footer">
-  <a class="insta-link" href="{INSTA}" target="_blank" rel="noopener">{INSTA_ICON}@welle_fotografien</a>
+  <a class="insta-link" href="{INSTA}" target="_blank" rel="noopener">{INSTA_ICON}{INSTA_HANDLE}</a>
   <div class="info">
     <span>상호명: Welle Fotografien</span><span>대표자: 김통일</span><span>연락처: 010-8283-7803</span>
     <span>사업자등록번호: 184-33-00892</span><span>이메일: wellefoto@naver.com</span>
@@ -108,10 +120,11 @@ def write(name, content):
 
 # ---------- Home ----------
 slides = []
-for i, f in enumerate(HERO):
+for i, (f, fx, fy) in enumerate(HERO):
     src = THUMB + f
     attr = f'src="{src}"' if i == 0 else f'data-src="{src}" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="'
     slides.append(f'<div class="hero__slide{" is-active" if i == 0 else ""}"><img {attr} alt="" '
+                  f'width="1417" height="944" style="--fx:{fx}%;--fy:{fy}%" '
                   f'{"fetchpriority=\"high\"" if i == 0 else ""}></div>')
 
 # 인스타그램 섹션: 미리보기에서는 앨범 대표 사진으로 구성 (실제 피드는 아임웹 위젯 사용)
@@ -130,7 +143,7 @@ home_body = f"""
   <div class="insta__head">
     <span class="eyebrow">Instagram</span>
     <h2>Welle Fotografien</h2>
-    <a href="{INSTA}" target="_blank" rel="noopener">@welle_fotografien</a>
+    <a href="{INSTA}" target="_blank" rel="noopener">{INSTA_HANDLE}</a>
   </div>
   <div class="insta__grid">{insta_items}</div>
 </section>
