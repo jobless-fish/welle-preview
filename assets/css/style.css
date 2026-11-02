@@ -434,7 +434,6 @@ details.privacy .terms { border: 0; border-top: 1px solid var(--line); height: 2
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
           mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
 }
-.flow:hover .flow__track { animation-play-state: paused; }
 .flow__row { display: flex; gap: 10px; padding-right: 10px; }
 .flow__row a { flex: none; display: block; background: var(--paper-2); overflow: hidden; }
 .flow__row img { height: clamp(170px, 22vw, 300px); width: auto; display: block; transition: transform .8s ease, opacity .3s; }
@@ -448,3 +447,30 @@ details.privacy .terms { border: 0; border-top: 1px solid var(--line); height: 2
 .flow__cta span { display: inline-block; transition: transform .3s ease; }
 .flow__cta:hover span { transform: translateX(5px); }
 @media (prefers-reduced-motion: reduce) { .flow__track { animation: none; } .flow { overflow-x: auto; } }
+
+/* 마우스를 올리면: 사진은 계속 흐르고, 위에 블러 막 + 'Gallery' 표시 + 물결 */
+.flow__stage { position: relative; }
+.flow__hover { display: none; }
+@media (hover: hover) and (pointer: fine) {
+  .flow__hover {
+    display: flex; align-items: center; justify-content: center;
+    position: absolute; inset: -6px 0; z-index: 2;
+    background: rgba(255, 255, 255, .26);
+    -webkit-backdrop-filter: blur(10px) saturate(115%); backdrop-filter: blur(10px) saturate(115%);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+            mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    opacity: 0; transition: opacity .55s ease; cursor: pointer;
+  }
+  .flow__stage:hover .flow__hover, .flow__hover:focus-visible { opacity: 1; }
+  .flow__label {
+    position: relative; z-index: 1;
+    font: 400 clamp(22px, 2.6vw, 34px)/1 var(--serif); letter-spacing: .32em; text-transform: uppercase; color: var(--ink);
+    padding: 12px 6px 10px 18px; border-bottom: 1px solid currentColor;
+    transform: translateY(6px); transition: transform .55s ease;
+  }
+  .flow__stage:hover .flow__label { transform: translateY(0); }
+  .flow__label span { display: inline-block; transition: transform .3s ease; }
+  .flow__hover:hover .flow__label span { transform: translateX(6px); }
+  .flow__ripple { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .flow__cta { display: none; }   /* PC는 마우스를 올리면 뜨는 표시로 대신 */
+}

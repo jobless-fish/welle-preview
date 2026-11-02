@@ -315,6 +315,61 @@
     render();
   }
 
+  /* 홈 갤러리 띠: 마우스를 올리면 블러 막 위에 물결이 퍼짐 */
+  (function () {
+    var hov = document.querySelector('.flow__hover');
+    if (!hov || !window.matchMedia || !matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    var cv = hov.querySelector('.flow__ripple'), ctx = cv.getContext('2d');
+    var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var rips = [], running = false, inside = false, last = null, dpr = 1;
+    function size() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      var r = hov.getBoundingClientRect();
+      cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
+    }
+    function add(x, y, s) {
+      rips.push({ x: x, y: y, t: performance.now(), s: s });
+      if (rips.length > 28) rips.shift();
+      if (!running) { running = true; requestAnimationFrame(draw); }
+    }
+    function draw(now) {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cv.width, cv.height);
+      var LIFE = 1600;
+      rips = rips.filter(function (r) { return now - r.t < LIFE; });
+      rips.forEach(function (r) {
+        var a = (now - r.t) / LIFE, k = Math.pow(1 - a, 1.6) * r.s;
+        var rad = 10 + a * 170;
+        // 빛이 맺힌 물결 테두리 + 바깥 번짐 + 안쪽 그늘 → 물방울이 떨어진 수면처럼
+        ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(255,255,255,' + (0.22 * k).toFixed(3) + ')';
+        ctx.beginPath(); ctx.arc(r.x, r.y, rad + 6, 0, Math.PI * 2); ctx.stroke();
+        ctx.lineWidth = 1.8; ctx.strokeStyle = 'rgba(255,255,255,' + (0.75 * k).toFixed(3) + ')';
+        ctx.beginPath(); ctx.arc(r.x, r.y, rad, 0, Math.PI * 2); ctx.stroke();
+        ctx.lineWidth = 2.5; ctx.strokeStyle = 'rgba(20,35,50,' + (0.12 * k).toFixed(3) + ')';
+        ctx.beginPath(); ctx.arc(r.x, r.y, Math.max(0, rad - 5), 0, Math.PI * 2); ctx.stroke();
+        if (a < 0.5) {   // 두 번째 잔물결
+          var r2 = Math.max(0, rad * 0.55);
+          ctx.lineWidth = 1.2; ctx.strokeStyle = 'rgba(255,255,255,' + (0.45 * k).toFixed(3) + ')';
+          ctx.beginPath(); ctx.arc(r.x, r.y, r2, 0, Math.PI * 2); ctx.stroke();
+        }
+      });
+      if (rips.length) requestAnimationFrame(draw); else { running = false; ctx.clearRect(0, 0, cv.width, cv.height); }
+    }
+    hov.addEventListener('mouseenter', function (e) { inside = true; size(); last = null; });
+    hov.addEventListener('mouseleave', function () { inside = false; });
+    hov.addEventListener('mousemove', function (e) {
+      if (still) return;
+      var r = hov.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+      if (last && Math.hypot(x - last.x, y - last.y) < 26) return;
+      last = { x: x, y: y };
+      add(x, y, 0.75);
+    });
+    hov.addEventListener('mousedown', function (e) {
+      var r = hov.getBoundingClientRect(); add(e.clientX - r.left, e.clientY - r.top, 1.2);
+    });
+    window.addEventListener('resize', function () { if (inside) size(); });
+  })();
+
   /* 라이트박스 */
   var links = Array.prototype.slice.call(document.querySelectorAll('[data-lightbox]'));
   if (links.length) {

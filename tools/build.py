@@ -150,9 +150,15 @@ home_body = f"""
   </div>
 </section>
 <section class="flow" aria-label="갤러리 미리보기">
-  <div class="flow__track">
-    <div class="flow__row">{flow_items}</div>
-    <div class="flow__row" aria-hidden="true">{flow_items.replace('<a ', '<a tabindex="-1" ')}</div>
+  <div class="flow__stage">
+    <div class="flow__track">
+      <div class="flow__row">{flow_items}</div>
+      <div class="flow__row" aria-hidden="true">{flow_items.replace('<a ', '<a tabindex="-1" ')}</div>
+    </div>
+    <a class="flow__hover" href="gallery.html" aria-label="갤러리로 이동">
+      <canvas class="flow__ripple" aria-hidden="true"></canvas>
+      <span class="flow__label">Gallery <span aria-hidden="true">→</span></span>
+    </a>
   </div>
   <a class="flow__cta" href="gallery.html">Gallery <span aria-hidden="true">→</span></a>
 </section>
