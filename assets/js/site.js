@@ -309,19 +309,13 @@
         SPAN = Math.max(1.1, Math.min(2, room / H));
       }
       root.style.setProperty('--span', Math.round(H * SPAN) + 'px');
-      if (lite) {
-        // 사진 상자는 처음 위치(헤더 뒤까지 꽉 찬 상태)로 고정 → 스크롤 중 사진을 다시 그리지 않음
-        var top0 = hero.getBoundingClientRect().top + window.scrollY;
-        hero.style.setProperty('--ext', top0.toFixed(1) + 'px');
-        hero.style.setProperty('--exb', '0px');
-      }
     }
     var SPAN = 2;   // 전환에 쓰는 스크롤 거리 = 헤더 높이 × SPAN (클수록 천천히)
     sizeHero();
     body.classList.add('js-hero');
 
     function lerp(a, b, t) { return a + (b - a) * t; }
-    var last = -1, ticking = false;
+    var last = -1, ticking = false, lastExt = null, lastExb = null;
 
     function render() {
       ticking = false;
@@ -340,10 +334,10 @@
       var topScreen = Math.max(base, 0);
       var botScreen = Math.min(hrect.bottom, window.innerHeight);
       if (botScreen - topScreen < 60) topScreen = Math.max(hrect.top, botScreen - 60);
-      if (!lite) {
-        hero.style.setProperty('--ext', (hrect.top - topScreen).toFixed(1) + 'px');
-        hero.style.setProperty('--exb', Math.max(0, hrect.bottom - botScreen).toFixed(1) + 'px');
-      }
+      // 1px 단위로만 바꿔서 같은 값으로 사진을 다시 그리는 일을 줄임
+      var ext = Math.round(hrect.top - topScreen), exb = Math.round(Math.max(0, hrect.bottom - botScreen));
+      if (ext !== lastExt) { hero.style.setProperty('--ext', ext + 'px'); lastExt = ext; }
+      if (exb !== lastExb) { hero.style.setProperty('--exb', exb + 'px'); lastExb = exb; }
       var amp = Math.sin(Math.PI * p) * (W < 700 ? 24 : 40);
       var ph = y * 0.018 / SPAN;
       var d = 'M0,0 H' + W + ' ';
