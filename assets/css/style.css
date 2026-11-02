@@ -106,42 +106,46 @@ main { min-height: 50vh; }
 }
 .hero__slide.is-active img { transform: scale(1); }
 
-/* 넘김 표시: 사진 왼쪽에 세로로 — 번호 + 짧은 선 10개, 현재 선은 길어지며 다음 사진까지 남은 시간만큼 채워짐 */
+/* 넘김 표시: 사진 왼쪽, 유리 캡슐 안에 세로로 쌓인 물결선
+   - 현재 사진: 길고 굵은 물결이 출렁이며, 다음 사진까지 남은 시간만큼 흰색으로 차오름 */
 .hero__dots {
-  position: absolute; left: clamp(16px, 2.6vw, 36px); top: 50%; z-index: 3;
+  position: absolute; left: clamp(14px, 2.4vw, 34px); top: 50%; z-index: 3;
   transform: translateY(-50%);
-  display: flex; flex-direction: column; align-items: flex-start; gap: 0;
-  filter: drop-shadow(0 0 1px rgba(0,0,0,.6)) drop-shadow(0 0 4px rgba(0,0,0,.25));
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  padding: 14px 12px;
+  border-radius: 999px;
+  background: linear-gradient(160deg, rgba(255,255,255,.22), rgba(255,255,255,.08));
+  border: 1px solid rgba(255,255,255,.38);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+          backdrop-filter: blur(12px) saturate(150%);
+  box-shadow: 0 10px 30px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.45), inset 0 -1px 0 rgba(255,255,255,.08);
 }
-.hero__count {
-  font: italic 400 15px/1 var(--serif); letter-spacing: .06em; color: #fff;
-  margin: 0 0 12px 1px; font-variant-numeric: tabular-nums;
-}
-.hero__count small { font-size: 11px; opacity: .7; margin-left: 4px; font-style: normal; }
 .hero__dots button {
-  position: relative; display: block; width: 34px; height: 13px; padding: 0; border: 0;
-  background: none; cursor: pointer;
+  display: block; width: 40px; height: 14px; padding: 0; border: 0; background: none; cursor: pointer;
 }
-.hero__dots button::before, .hero__dots button i {
-  content: ""; position: absolute; left: 0; top: 5.5px; height: 2px; border-radius: 2px;
-}
-.hero__dots button::before { width: 12px; background: rgba(255,255,255,.72); transition: width .45s ease, background .3s; }
-.hero__dots button:hover::before { width: 20px; background: rgba(255,255,255,.85); }
-.hero__dots button.is-active::before { width: 34px; background: rgba(255,255,255,.45); }
-.hero__dots button i { width: 0; background: #fff; display: block; }
-.hero.is-playing .hero__dots button.is-active i { animation: heroFill var(--slide-ms, 5000ms) linear forwards; }
-.hero:not(.is-playing) .hero__dots button.is-active i { width: 34px; }
-@keyframes heroFill { from { width: 0; } to { width: 34px; } }
+.hero__dots svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.hero__dots path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.hero__dots .w-sh { stroke: rgba(0,0,0,.22); stroke-width: 3.6; stroke-dasharray: 34 100; transition: stroke-dasharray .5s ease; }
+.hero__dots .w-b  { stroke: rgba(255,255,255,.78); stroke-width: 1.6; stroke-dasharray: 34 100; transition: stroke-dasharray .5s ease, stroke .3s; }
+.hero__dots .w-f  { stroke: #fff; stroke-width: 2.2; stroke-dasharray: 100 100; stroke-dashoffset: 100; }
+.hero__dots button:hover .w-b, .hero__dots button:hover .w-sh { stroke-dasharray: 60 100; }
+.hero__dots button:hover .w-b { stroke: #fff; }
+.hero__dots button.is-active .w-sh, .hero__dots button.is-active .w-b { stroke-dasharray: 100 0; }
+.hero__dots button.is-active .w-b { stroke: rgba(255,255,255,.42); stroke-width: 2.2; }
+.hero__dots button.is-active .w-sh { stroke-width: 4.2; }
+.hero__dots button.is-active svg { animation: heroSway 2.6s ease-in-out infinite; transform-origin: 50% 50%; }
+.hero.is-playing .hero__dots button.is-active .w-f { animation: heroFill var(--slide-ms, 5000ms) linear forwards; }
+.hero:not(.is-playing) .hero__dots button.is-active .w-f { stroke-dashoffset: 0; }
+@keyframes heroFill { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+@keyframes heroSway { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(.55) translateX(1px); } }
 @media (max-width: 760px) {
-  .hero__count { font-size: 13px; margin-bottom: 8px; }
-  .hero__dots button { width: 26px; height: 10px; }
-  .hero__dots button::before, .hero__dots button i { top: 4px; }
-  .hero__dots button::before { width: 9px; }
-  .hero__dots button.is-active::before { width: 26px; }
-  .hero:not(.is-playing) .hero__dots button.is-active i { width: 26px; }
-  @keyframes heroFill { from { width: 0; } to { width: 26px; } }
+  .hero__dots { padding: 10px 9px; gap: 1px; }
+  .hero__dots button { width: 30px; height: 11px; }
 }
-@media (prefers-reduced-motion: reduce) { .hero.is-playing .hero__dots button.is-active i { animation: none; width: 100%; } }
+@media (prefers-reduced-motion: reduce) {
+  .hero__dots button.is-active svg { animation: none; }
+  .hero.is-playing .hero__dots button.is-active .w-f { animation: none; stroke-dashoffset: 0; }
+}
 
 /* 사진 위 하단 정보 — 옅은 흰 글씨 + 얇은 그림자 테두리로 어떤 색 위에서도 읽힘 */
 .hero__info {

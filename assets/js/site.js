@@ -120,13 +120,17 @@
     slides.forEach(function (_, i) {
       var b = document.createElement('button');
       b.type = 'button';
-      b.innerHTML = '<i></i>';
+      // 물결선 (그림자 · 바탕 · 차오르는 선)
+      var W = 'M1 7 C4.5 2, 8.5 2, 12 7 S19.5 12, 23 7 S30.5 2, 34 7 S38 10.5, 39 9';
+      b.innerHTML = '<svg viewBox="0 0 40 14" aria-hidden="true">' +
+        '<path class="w-sh" pathLength="100" d="' + W + '"/>' +
+        '<path class="w-b" pathLength="100" d="' + W + '"/>' +
+        '<path class="w-f" pathLength="100" d="' + W + '"/></svg>';
       b.setAttribute('aria-label', (i + 1) + '번째 사진');
       b.addEventListener('click', function () { show(i); restart(); });
       dotsWrap.appendChild(b);
     });
     var dots = dotsWrap.querySelectorAll('button');
-    var countEl = dotsWrap.querySelector('.hero__count');
     var SLIDE_MS = 5000;
     hero.style.setProperty('--slide-ms', SLIDE_MS + 'ms');
     function pad(n) { return (n < 10 ? '0' : '') + n; }
@@ -138,7 +142,7 @@
       slides[cur].classList.add('is-active');
       void dots[cur].offsetWidth;                  // 채움 애니메이션을 처음부터 다시
       dots[cur].classList.add('is-active');
-      if (countEl) countEl.firstChild.nodeValue = pad(cur + 1);
+
       load(slides[(cur + 1) % slides.length].querySelector('img'));   // 다음 장 미리
     }
     function restart() {
