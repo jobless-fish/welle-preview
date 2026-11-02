@@ -523,7 +523,7 @@ details.privacy .terms { border: 0; border-top: 1px solid var(--line); height: 2
 @view-transition { navigation: auto; }
 html.water-nav::view-transition-old(root) { animation: none; }
 html.water-nav::view-transition-new(root) {
-  animation: waterReveal 1.5s cubic-bezier(.45, 0, .2, 1) both;
+  animation: waterReveal 1.9s cubic-bezier(.4, 0, .3, 1) both;
   /* 경계를 넓게 흐리고, 중심이 살짝 다른 두 원을 겹쳐 물이 번지듯 불규칙하게 */
   -webkit-mask-image:
     radial-gradient(circle at var(--wx, 50%) var(--wy, 50%), #000 calc(var(--wr) - 160px), transparent var(--wr)),
@@ -532,8 +532,8 @@ html.water-nav::view-transition-new(root) {
     radial-gradient(circle at var(--wx, 50%) var(--wy, 50%), #000 calc(var(--wr) - 160px), transparent var(--wr)),
     radial-gradient(ellipse 115% 90% at calc(var(--wx, 50%) + 4%) calc(var(--wy, 50%) - 3%), #000 calc(var(--wr) * .9 - 180px), transparent calc(var(--wr) * .9));
 }
-@keyframes waterReveal { from { --wr: 0px; } to { --wr: 260vmax; } }
-html.water-nav::view-transition-group(root) { animation-duration: 1.5s; }
+@keyframes waterReveal { from { --wr: 0px; } to { --wr: calc(160vmax + 200px); } }   /* 화면 끝까지 딱 닿는 크기 */
+html.water-nav::view-transition-group(root) { animation-duration: 1.9s; }
 /* 페이지 전환을 지원하지 않는 브라우저 */
 html.page-fade body { animation: pageFade .7s ease both; }
 @keyframes pageFade { from { opacity: 0; } to { opacity: 1; } }
