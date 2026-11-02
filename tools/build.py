@@ -173,20 +173,27 @@ intro = (ROOT / "tools" / "intro-snippet.html").read_text(encoding="utf-8")
 write("index.html", page("", "Home", home_body, extra_body=intro, body_class="home"))
 
 # ---------- Gallery ----------
-cards = "".join(f"""
-  <a class="album-card" href="album-{a['id']}.html">
-    <div class="album-card__img"><img src="{up(a['cover'], 700)}" alt="{html.escape(a['title'])}" loading="lazy"></div>
-    <div class="album-card__meta">
-      <div class="album-card__title">{html.escape(a['title'])}</div>
-      <div class="album-card__count">{len(a['photos'])} photos</div>
-    </div>
-  </a>""" for a in albums)
+# 왼쪽 큰 칸 = 첫 앨범(아벤티움), 오른쪽 8칸 = 나머지 (누르면 큰 칸과 자리 바꿈)
+first, rest = albums[0], albums[1:]
+gx_tiles = "".join(f"""
+    <button class="gx__tile" type="button" data-id="{a['id']}" aria-label="{html.escape(a['title'])} — 크게 보기">
+      <img src="{up(a['cover'], 560)}" alt="" decoding="async">
+      <span class="gx__tmeta"><span class="gx__tname">{html.escape(a['title'])}</span><span class="gx__tcount">{len(a['photos'])}</span></span>
+    </button>""" for a in rest)
+gx_data = json.dumps({"up": UP, "albums": [{"id": a["id"], "title": a["title"], "cover": a["cover"], "photos": a["photos"]} for a in albums]}, ensure_ascii=False)
 write("gallery.html", page("Gallery", "Gallery", f"""
-<div class="container">
-  <div class="page-head"><span class="eyebrow">Portfolio</span><h1>Gallery</h1></div>
-  <div class="albums">{cards}
+<h1 class="sr-only">Gallery</h1>
+<section class="gx" aria-label="갤러리">
+  <a class="gx__big" href="album-{first['id']}.html" data-water aria-label="{html.escape(first['title'])} 사진 전체보기">
+    <div class="gx__stage"></div>
+    <div class="gx__shade" aria-hidden="true"></div>
+    <div class="gx__meta"><span class="gx__title">{html.escape(first['title'])}</span><span class="gx__count">{len(first['photos'])} photos</span></div>
+    <div class="gx__veil"><span class="gx__all">사진 전체보기 <span aria-hidden="true">→</span></span></div>
+  </a>
+  <div class="gx__grid">{gx_tiles}
   </div>
-</div>"""))
+</section>
+<script>window.__GX__ = {gx_data};</script>""", body_class="compact"))
 
 # ---------- Album pages ----------
 for i, a in enumerate(albums):
@@ -308,9 +315,3 @@ reservation_body = f"""
   </section>
 </div>"""
 write("reservation.html", page("Reservation", "Reservation", reservation_body))
-
-# ---------- 갤러리 시안 비교 페이지 ----------
-from gallery_ideas import build as build_ideas  # noqa: E402
-_ideas_body, _ideas_css, _ideas_js = build_ideas(albums, UP)
-write("gallery-ideas.html", page("Gallery 시안", "Gallery", _ideas_body,
-                                 extra_head=_ideas_css, extra_body=_ideas_js))

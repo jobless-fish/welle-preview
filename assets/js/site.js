@@ -54,7 +54,15 @@
     var scrolled = false, ticking = false;
 
     // 펼쳐진 상태의 헤더 높이를 재서 그만큼 자리를 확보
+    var compact = document.body.classList.contains('compact');   // 갤러리처럼 한 화면에 담는 페이지는 작은 헤더로 고정
+    if (compact) { header.classList.add('is-scrolled'); scrolled = true; }
     var measure = function () {
+      if (compact) {
+        header.style.transition = 'none';
+        root.style.setProperty('--header-h', header.offsetHeight + 'px');
+        void header.offsetHeight; header.style.transition = '';
+        return;
+      }
       var was = header.classList.contains('is-scrolled');
       header.style.transition = 'none';
       header.querySelectorAll('*').forEach(function (el) { el.style.transition = 'none'; });
@@ -69,6 +77,7 @@
     // 줄어드는 기준(80px)과 다시 커지는 기준(20px)을 다르게 해서 경계에서 깜빡이지 않게
     var update = function () {
       ticking = false;
+      if (compact) return;
       var y = window.scrollY;
       var home = document.body.classList.contains('home');
       var full = parseFloat(getComputedStyle(root).getPropertyValue('--header-h')) || 190;
@@ -502,6 +511,82 @@
       if (moved) start(c.x, c.y);                          // 퍼지는 중이면 무시됨
     });
     window.addEventListener('resize', function () { if (running) setup(); });
+  })();
+
+  /* 갤러리: 왼쪽 큰 칸(사진 디졸브) + 오른쪽 8칸, 누르면 큰 칸과 자리 바꿈 */
+  (function () {
+    var gx = document.querySelector('.gx');
+    if (!gx || !window.__GX__) return;
+    var D = window.__GX__.albums, UP = window.__GX__.up;
+    var byId = {}; D.forEach(function (a) { byId[a.id] = a; });
+    var big = gx.querySelector('.gx__big'), stage = big.querySelector('.gx__stage');
+    var bigTitle = big.querySelector('.gx__title'), bigCount = big.querySelector('.gx__count');
+    var tiles = [].slice.call(gx.querySelectorAll('.gx__tile'));
+    var featured = D[0].id, idx = 0, timer = null;
+    var wide = function () { return window.innerWidth > 760; };
+    function url(f, w) { return UP + f + '?w=' + w; }
+
+    // 큰 칸 사진 디졸브
+    function showPhoto(f, instant) {
+      var img = new Image();
+      img.alt = ''; img.decoding = 'async';
+      img.src = url(f, wide() ? 1400 : 900);
+      var put = function () {
+        img.className = 'gx__img';
+        stage.appendChild(img);
+        requestAnimationFrame(function () { requestAnimationFrame(function () { img.classList.add('is-on'); }); });
+        var old = [].slice.call(stage.querySelectorAll('.gx__img')).filter(function (n) { return n !== img; });
+        setTimeout(function () { old.forEach(function (n) { n.remove(); }); }, instant ? 50 : 1500);
+      };
+      if (img.complete) put(); else { img.onload = put; img.onerror = put; }
+    }
+    function play() {
+      clearInterval(timer);
+      var a = byId[featured];
+      timer = setInterval(function () {
+        idx = (idx + 1) % a.photos.length;
+        showPhoto(a.photos[idx]);
+        var pre = new Image(); pre.src = url(a.photos[(idx + 1) % a.photos.length], wide() ? 1400 : 900);   // 다음 장 미리
+      }, 3800);
+    }
+    function setBig(id) {
+      featured = id; idx = 0;
+      var a = byId[id];
+      big.setAttribute('href', 'album-' + id + '.html');
+      big.setAttribute('aria-label', a.title + ' 사진 전체보기');
+      big.classList.add('is-swapping');
+      setTimeout(function () {
+        bigTitle.textContent = a.title; bigCount.textContent = a.photos.length + ' photos';
+        big.classList.remove('is-swapping');
+      }, 260);
+      showPhoto(a.photos[0]);
+      play();
+    }
+    function setTile(tile, id) {
+      var a = byId[id];
+      tile.dataset.id = id;
+      tile.setAttribute('aria-label', a.title + ' — 크게 보기');
+      tile.classList.add('is-swapping');
+      setTimeout(function () {
+        tile.querySelector('img').src = url(a.cover, 560);
+        tile.querySelector('.gx__tname').textContent = a.title;
+        tile.querySelector('.gx__tcount').textContent = a.photos.length;
+        tile.classList.remove('is-swapping');
+      }, 260);
+    }
+    tiles.forEach(function (tile) {
+      tile.addEventListener('click', function () {
+        var id = +tile.dataset.id, prev = featured;
+        if (id === prev) return;
+        setTile(tile, prev);
+        setBig(id);
+        if (!wide()) gx.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    showPhoto(byId[featured].photos[0], true);
+    play();
+    document.addEventListener('visibilitychange', function () { if (document.hidden) clearInterval(timer); else play(); });
   })();
 
   /* 라이트박스 */
