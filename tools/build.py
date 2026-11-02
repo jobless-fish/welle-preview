@@ -127,31 +127,34 @@ for i, (f, fx, fy) in enumerate(HERO):
                   f'width="1417" height="944" style="--fx:{fx}%;--fy:{fy}%" '
                   f'{"fetchpriority=\"high\"" if i == 0 else ""}></div>')
 
-# 인스타그램 섹션: 미리보기에서는 앨범 대표 사진으로 구성 (실제 피드는 아임웹 위젯 사용)
-insta_pick = [albums[0]["photos"][2], albums[1]["photos"][4], albums[2]["photos"][6],
-              albums[3]["photos"][3], albums[5]["photos"][5], albums[4]["photos"][7]]
-insta_items = "".join(
-    f'<a href="{INSTA}" target="_blank" rel="noopener" aria-label="인스타그램에서 보기">'
-    f'<img src="{up(f, 500)}" alt="" loading="lazy"></a>' for f in insta_pick)
+# 아래 영역: 갤러리 사진이 천천히 옆으로 흐르는 띠 (누르면 해당 앨범으로)
+flow_pick = []
+for a in albums:
+    ph = a["photos"]
+    for k in (len(ph) // 4, (len(ph) * 3) // 4):
+        flow_pick.append((a["id"], a["title"], ph[k]))
+flow_items = "".join(
+    f'<a href="album-{aid}.html" aria-label="{html.escape(t)} 앨범 보기"><img src="{up(f, 520)}" alt="" loading="lazy"></a>'
+    for aid, t, f in flow_pick)
 
 home_body = f"""
-<section class="hero" aria-label="대표 사진">
+<section class="hero" aria-label="대표 사진 — 누르면 다음 사진">
   {''.join(slides)}
   <div class="hero__shade" aria-hidden="true"></div>
+  <div class="hero__fade" aria-hidden="true"></div>
   <div class="hero__dots" role="group" aria-label="사진 넘기기"></div>
   <div class="hero__info">
-    <a class="ig" href="{INSTA}" target="_blank" rel="noopener">{INSTA_ICON}{INSTA_HANDLE}</a>
+    <a class="ig" href="{INSTA}" target="_blank" rel="noopener">{INSTA_ICON}<span>{INSTA_HANDLE}</span></a>
     <div class="row"><span>상호명: Welle Fotografien</span><span>대표자: 김통일</span><span>연락처: 010-8283-7803</span><span>사업자등록번호: 184-33-00892</span><span>이메일: wellefoto@naver.com</span></div>
     <div class="copy">© 2021 Welle Fotografien All Rights Reserved.</div>
   </div>
 </section>
-<section class="insta container">
-  <div class="insta__head">
-    <span class="eyebrow">Instagram</span>
-    <h2>Welle Fotografien</h2>
-    <a href="{INSTA}" target="_blank" rel="noopener">{INSTA_HANDLE}</a>
+<section class="flow" aria-label="갤러리 미리보기">
+  <div class="flow__track">
+    <div class="flow__row">{flow_items}</div>
+    <div class="flow__row" aria-hidden="true">{flow_items.replace('<a ', '<a tabindex="-1" ')}</div>
   </div>
-  <div class="insta__grid">{insta_items}</div>
+  <a class="flow__cta" href="gallery.html">Gallery <span aria-hidden="true">→</span></a>
 </section>
 """
 intro = (ROOT / "tools" / "intro-snippet.html").read_text(encoding="utf-8")

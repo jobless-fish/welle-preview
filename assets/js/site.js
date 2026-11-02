@@ -157,6 +157,12 @@
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', startSlides);
     else startSlides();
 
+    // 사진을 누르면 다음 사진 (링크·버튼은 제외)
+    hero.addEventListener('click', function (e) {
+      if (e.target.closest('a, button')) return;
+      show(cur + 1); restart();
+    });
+
     // 좌우 스와이프로 사진 넘기기
     var sx = null, sy = null;
     hero.addEventListener('touchstart', function (e) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
@@ -235,12 +241,18 @@
       var p = Math.min(1, y / (H * SPAN));        // 0 = 사진 꽉 참, 1 = 흰 헤더
       var e = p * p * (3 - 2 * p);                // 부드러운 곡선
 
-      // 사진 윗부분을 헤더 뒤까지 늘림: 전환하는 동안 사진은 페이지보다 천천히 올라가다가 p=1 에서 원래 자리로
-      hero.style.setProperty('--ext', (H * (1 - p)).toFixed(1) + 'px');
-
       // 흰 물결: 아래 경계가 0 → 헤더 높이까지 내려오며 출렁임 (중간에 가장 크게)
       var W = header.clientWidth || root.clientWidth, Hc = header.offsetHeight;
       var base = Hc * e;
+
+      // 사진 상자를 '지금 화면에 보이는 부분'(물결 아래 ~ 화면 아래)에 맞춤
+      // → 스크롤해도 사진이 인물 위치를 기준으로 다시 맞춰져 인물이 계속 보임
+      var hrect = hero.getBoundingClientRect();
+      var topScreen = Math.max(base, 0);
+      var botScreen = Math.min(hrect.bottom, window.innerHeight);
+      if (botScreen - topScreen < 60) topScreen = Math.max(hrect.top, botScreen - 60);
+      hero.style.setProperty('--ext', (hrect.top - topScreen).toFixed(1) + 'px');
+      hero.style.setProperty('--exb', Math.max(0, hrect.bottom - botScreen).toFixed(1) + 'px');
       var amp = Math.sin(Math.PI * p) * (W < 700 ? 24 : 40);
       var ph = y * 0.018 / SPAN;
       var d = 'M0,0 H' + W + ' ';
@@ -289,7 +301,7 @@
       var hr = hero.getBoundingClientRect(), vh = window.innerHeight;
       var visTop = Math.max(hr.top, 0);            // 로고·메뉴 아래부터 (메뉴와 겹치지 않게)
       var visBot = Math.min(hr.bottom, vh);
-      if (info) info.style.bottom = Math.max(window.innerWidth < 761 ? 10 : 18, hr.bottom - vh + 18) + 'px';
+      if (info) info.style.bottom = Math.max(window.innerWidth < 761 ? 22 : 30, hr.bottom - vh + 30) + 'px';
       if (info) visBot = Math.min(visBot, info.getBoundingClientRect().top - 8);   // 하단 정보와 겹치지 않게
       if (dotsWrap) dotsWrap.style.top = ((visTop + visBot) / 2 - hr.top) + 'px';
       body.classList.toggle('is-top', p < 0.02);

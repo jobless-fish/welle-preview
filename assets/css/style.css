@@ -140,20 +140,36 @@ main { min-height: 50vh; }
 
 /* 사진 위 하단 정보 — 옅은 흰 글씨 + 얇은 그림자 테두리로 어떤 색 위에서도 읽힘 */
 .hero__info {
-  position: absolute; right: clamp(16px, 2.6vw, 36px); bottom: 18px; z-index: 3;
+  position: absolute; right: clamp(16px, 2.6vw, 36px); bottom: 30px; z-index: 3;
   max-width: min(440px, 46%); text-align: right; pointer-events: none;
   color: rgba(255,255,255,.82); font-size: 11px; line-height: 1.7; letter-spacing: .01em;
   text-shadow: 0 0 1px rgba(0,0,0,.55), 0 0 2px rgba(0,0,0,.35), 0 1px 8px rgba(0,0,0,.3);
 }
 .hero__info a { pointer-events: auto; color: inherit; }
 .hero__info .row { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 10px; }
-.hero__info .ig { display: inline-flex; align-items: center; gap: 6px; font: 400 12px/1 var(--serif); letter-spacing: .08em; margin-bottom: 6px; }
-.hero__info .ig svg { width: 14px; height: 14px; filter: drop-shadow(0 0 1px rgba(0,0,0,.55)); }
+.hero__info .ig {
+  display: inline-flex; align-items: center; gap: 8px; margin-bottom: 8px;
+  font: 400 16px/1 var(--serif); letter-spacing: .06em; color: #fff;
+  animation: igHop 7s ease-in-out 2.5s infinite;
+}
+.hero__info .ig svg { width: 22px; height: 22px; filter: drop-shadow(0 0 1px rgba(0,0,0,.6)) drop-shadow(0 1px 6px rgba(0,0,0,.25)); }
+.hero__info .ig:hover { animation-play-state: paused; opacity: 1; }
+.hero__info .ig:hover span { text-decoration: underline; text-underline-offset: 3px; }
+/* 가끔 두 번 통통 튀어서 눌러보게 */
+@keyframes igHop {
+  0%, 82%, 100% { transform: translateY(0); }
+  86% { transform: translateY(-7px); }
+  89% { transform: translateY(0); }
+  92% { transform: translateY(-4px); }
+  95% { transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) { .hero__info .ig { animation: none; } }
 .hero__info .copy { font: 400 11px/1.6 var(--serif); letter-spacing: .05em; opacity: .85; }
 @media (max-width: 760px) {
   .hero__info { font-size: 9px; line-height: 1.55; bottom: 10px; max-width: 64%; }
   .hero__info .row { gap: 0 7px; }
-  .hero__info .ig { font-size: 11px; margin-bottom: 3px; }
+  .hero__info .ig { font-size: 13px; margin-bottom: 5px; }
+  .hero__info .ig svg { width: 18px; height: 18px; }
   .hero__info .copy { font-size: 9.5px; }
 }
 .home .site-footer { display: none; }   /* 홈은 사진 위에 같은 정보가 있음 */
@@ -347,7 +363,10 @@ details.privacy .terms { border: 0; border-top: 1px solid var(--line); height: 2
 /* 페이지가 짧아도 물결 전환을 끝까지 볼 수 있게 최소 길이 확보 */
 .js-hero { min-height: calc(100vh + var(--span, 400px) + 2px); }
 /* 사진을 헤더 뒤까지 위로 늘림 (스크롤할수록 줄어듦) */
-.js-hero .hero__slide, .js-hero .hero__shade { top: calc(-1 * var(--ext, 0px)); }
+.js-hero .hero__slide { top: calc(-1 * var(--ext, 0px)); bottom: var(--exb, 0px); }
+.js-hero .hero__shade { top: calc(-1 * var(--ext, 0px)); }
+.hero { cursor: pointer; }
+.hero a, .hero button { cursor: pointer; }
 
 /* 홈 헤더: 배경은 물결 그림이 대신함 */
 .home .site-header { background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
@@ -397,3 +416,35 @@ details.privacy .terms { border: 0; border-top: 1px solid var(--line); height: 2
 .sbar:hover .sbar__thumb, .sbar.is-drag .sbar__thumb { width: 7px; right: 3px; background: rgba(29, 35, 40, .55); }
 .sbar.is-drag .sbar__thumb { cursor: grabbing; }
 .sbar-dragging, .sbar-dragging * { user-select: none !important; cursor: grabbing !important; }
+
+/* 사진 아래 경계를 살짝 흐리게 */
+.hero__fade {
+  position: absolute; left: 0; right: 0; bottom: -1px; height: 56px; z-index: 2; pointer-events: none;
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  -webkit-mask-image: linear-gradient(transparent, #000 70%); mask-image: linear-gradient(transparent, #000 70%);
+  background: linear-gradient(rgba(255,255,255,0) 0%, rgba(255,255,255,0) 35%, rgba(255,255,255,.55) 80%, #fff 100%);
+}
+@media (max-width: 760px) { .hero__fade { height: 34px; } }
+
+/* 홈 아래: 갤러리 사진이 천천히 옆으로 흐르는 띠 */
+.flow { position: relative; padding: clamp(28px, 4vw, 48px) 0 clamp(56px, 8vw, 88px); overflow: hidden; }
+.flow__track {
+  display: flex; width: max-content;
+  animation: flow 140s linear infinite;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.flow:hover .flow__track { animation-play-state: paused; }
+.flow__row { display: flex; gap: 10px; padding-right: 10px; }
+.flow__row a { flex: none; display: block; background: var(--paper-2); overflow: hidden; }
+.flow__row img { height: clamp(170px, 22vw, 300px); width: auto; display: block; transition: transform .8s ease, opacity .3s; }
+.flow__row a:hover img { transform: scale(1.03); }
+@keyframes flow { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.flow__cta {
+  display: table; margin: clamp(26px, 4vw, 40px) auto 0;
+  font: 400 15px/1 var(--serif); letter-spacing: .22em; text-transform: uppercase; color: var(--ink);
+  padding: 14px 4px 10px; border-bottom: 1px solid currentColor;
+}
+.flow__cta span { display: inline-block; transition: transform .3s ease; }
+.flow__cta:hover span { transform: translateX(5px); }
+@media (prefers-reduced-motion: reduce) { .flow__track { animation: none; } .flow { overflow-x: auto; } }
