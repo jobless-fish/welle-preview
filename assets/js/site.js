@@ -346,7 +346,9 @@
       // 카드가 올라온 정도 (0 = 아래에 숨음, 1 = 다 올라옴)
       var cover = 0;
       if (dock) {
-        dockQ = Math.min(1, y / (H * SPAN * 0.9));
+        // 띠 자리가 화면 아래로 들어오기 시작할 때부터, 다 들어올 때까지 → 회전·올라옴이 화면 안에서 보이게
+        var fr = flowEl.getBoundingClientRect(), fh = flowEl.offsetHeight || 1;
+        dockQ = Math.max(0, Math.min(1, (window.innerHeight - fr.top) / (fh * 0.95)));
         cover = flowEl.offsetHeight * 0.4 * dockQ;               // 인물은 카드 위쪽에 보이도록
         startDock();
       }
