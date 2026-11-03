@@ -100,7 +100,8 @@ main { min-height: 50vh; }
 .hero__slide.is-active { opacity: 1; }
 .hero { isolation: isolate; }
 .hero__slide.is-prev { opacity: var(--po, 1); transition: none; z-index: -1; }   /* 교차할 때 아래에 깔리는 이전 사진 (누른 순간의 투명도 그대로) */
-.hero__slide.is-prev2 { opacity: 1; transition: none; z-index: -2; }                /* 교차 도중 다시 눌렀을 때 그 밑장 */
+.hero__slide.is-prev2 { opacity: 1; transition: none; z-index: -2; }
+.hero__slide:not(.is-active):not(.is-prev):not(.is-prev2) { z-index: -3; }   /* 정리된 이전 사진이 사라지는 동안 현재 사진 위로 올라오지 않게 */                /* 교차 도중 다시 눌렀을 때 그 밑장 */
 .hero__slide img {
   width: 100%; height: 100%; object-fit: cover;
   object-position: var(--fx, 50%) var(--fy, 50%);
