@@ -199,7 +199,15 @@
       dots[cur].classList.add('is-active');
 
       load(slides[(cur + 1) % slides.length].querySelector('img'));   // 다음 장 미리
+      paintCanvas();
     }
+    // 한 화면 모드: 페이지 바깥(폰 도구막대·홈 표시줄 아래)도 지금 사진으로 칠해 흰 줄이 보이지 않게
+    function paintCanvas() {
+      if (!document.documentElement.classList.contains('no-scroll')) return;
+      var im = slides[cur].querySelector('img'), src = im && (im.currentSrc || im.getAttribute('src') || im.getAttribute('data-src'));
+      if (src) document.documentElement.style.background = '#111 url("' + src + '") center bottom / cover no-repeat';
+    }
+    window.__wellePaintCanvas = function () { paintCanvas(); };
     function restart() {
       clearInterval(timer);
       hero.classList.add('is-playing');
@@ -297,6 +305,7 @@
       // PC 홈은 스크롤 없는 한 화면 — 카드만 마우스·휠에 반응
       body.classList.add('has-dock');
       root.classList.add('no-scroll');
+      if (window.__wellePaintCanvas) window.__wellePaintCanvas();
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
       window.scrollTo(0, 0);
     }
@@ -319,7 +328,9 @@
       }
       root.style.setProperty('--hero-h', Math.round(h) + 'px');
       // 한 화면 모드: 폰 브라우저 아래 도구막대 뒤까지 사진이 채워지도록 '가장 큰 화면 높이'(lvh) 기준
-      if (dock && window.CSS && CSS.supports('height', '100lvh')) root.style.setProperty('--hero-h', 'calc(100lvh - ' + Math.round(H) + 'px)');
+      // 폰은 맨 아래 홈 표시줄 영역까지 넉넉히 넘치게 (스크롤이 없어 넘친 부분은 보이지 않음)
+      if (dock && window.CSS && CSS.supports('height', '100lvh')) root.style.setProperty('--hero-h', 'calc(100lvh - ' + Math.round(H) + 'px' +
+        (window.innerWidth <= 760 ? ' + env(safe-area-inset-bottom, 0px) + 40px' : '') + ')');
       // 전환 거리: 기본은 헤더 높이 × 2, 페이지가 짧으면 그만큼 줄여서 아래에 빈 여백이 생기지 않게
       SPAN = 2;
       if (mainEl && !dock) {

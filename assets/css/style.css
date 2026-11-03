@@ -455,7 +455,7 @@ html.no-scroll, html.no-scroll body { overscroll-behavior: none; }
   .has-dock .flow__row { gap: 10px; padding-right: 10px; }
   .has-dock .flow__row img { height: clamp(104px, 29vw, 150px); }
   /* 카드는 아래 도구막대에 가리지 않게 보이는 화면(svh) 안쪽에 */
-  .has-dock .flow { padding-bottom: clamp(18px, 4vh, 36px); padding-bottom: calc(clamp(18px, 4svh, 36px) + 100lvh - 100svh); }
+  .has-dock .flow { padding-bottom: clamp(18px, 4vh, 36px); padding-bottom: calc(clamp(18px, 4svh, 36px) + 100lvh - 100svh + env(safe-area-inset-bottom, 0px) + 40px); }
   .has-dock .flow__cta, .has-dock .flow__stage::after { transition: opacity .45s ease; }
   .has-dock .flow:not(.is-up) .flow__cta, .has-dock .flow:not(.is-up) .flow__stage::after { opacity: 0; pointer-events: none; }
 }
