@@ -748,6 +748,8 @@
       setTimeout(function () {
         bigTitle.textContent = a.title; bigCount.textContent = a.photos.length + ' photos';
         big.classList.remove('is-swapping');
+        big.classList.remove('is-new'); void big.offsetWidth; big.classList.add('is-new');   // '한 번 더 누르면 열림' 반짝임
+        clearTimeout(big._newT); big._newT = setTimeout(function () { big.classList.remove('is-new'); }, 2000);
       }, 260);
       showPhoto(a.photos[0]);
       play();
