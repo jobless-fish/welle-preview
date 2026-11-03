@@ -1,5 +1,6 @@
 /* Welle Fotografien — 공통 스크립트 */
 (function () {
+  function onLoad(fn) { if (document.readyState === 'complete') setTimeout(fn, 0); else window.addEventListener('load', fn); }
   // data-water 링크: 다음 페이지를 화면 위에 보이지 않게 먼저 불러오고,
   // 사진까지 다 준비되면 누른 자리에서부터 번지듯 드러낸 뒤 주소를 넘김 (늦게 열려도 효과가 빠지지 않음)
   document.addEventListener('click', function (e) {
@@ -93,7 +94,7 @@
 
     measure();
     window.addEventListener('resize', measure);
-    window.addEventListener('load', measure);
+    onLoad(measure);
     window.addEventListener('scroll', onScroll, { passive: true });
     update();
   }
@@ -131,7 +132,7 @@
 
     window.addEventListener('scroll', function () { schedule(); flash(); }, { passive: true });
     window.addEventListener('resize', schedule);
-    window.addEventListener('load', schedule);
+    onLoad(schedule);
     if (window.ResizeObserver) new ResizeObserver(schedule).observe(body);
     new MutationObserver(schedule).observe(body, { attributes: true, attributeFilter: ['class'] });
     new MutationObserver(schedule).observe(root, { attributes: true, attributeFilter: ['style'] });
@@ -559,7 +560,7 @@
 
     window.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', function () { sizeHero(); schedule(); });
-    window.addEventListener('load', function () { sizeHero(true); schedule(); });
+    onLoad(function () { sizeHero(true); schedule(); });
     if (window.ResizeObserver) new ResizeObserver(schedule).observe(header);
     render();
   }
