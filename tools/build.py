@@ -171,6 +171,8 @@ home_body = f"""
 </section>
 """
 intro = (ROOT / "tools" / "intro-snippet.html").read_text(encoding="utf-8")
+# 아임웹 커스텀 위젯처럼 외부 파일로 불러올 때 쓰는 인트로 스크립트 (script 태그 안쪽만)
+(ROOT / "assets" / "js" / "intro.js").write_text(intro.split("<script>", 1)[1].rsplit("</script>", 1)[0].strip() + "\n", encoding="utf-8")
 write("index.html", page("", "Home", home_body, extra_body=intro, body_class="home"))
 
 # ---------- Gallery ----------

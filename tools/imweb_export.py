@@ -84,7 +84,80 @@ def export(name: str) -> str:
     return "\n".join(parts)
 
 
+def export_custom(name: str, scripts):
+    """아임웹 '커스텀 위젯'용: HTML·CSS·JS 칸에 나눠 넣는 세 조각 (칸마다 2만 자 이하)"""
+    src = (ROOT / name).read_text(encoding="utf-8")
+    body_cls = (re.search(r'<body(?: class="([^"]*)")?>', src).group(1) or "").split()
+    body = src.split("<body", 1)[1].split(">", 1)[1].rsplit("</body>", 1)[0]
+    markup = body[:re.search(r'<script src="assets/js/site\.js', body).start()]
+    for page, url in LINKS.items():
+        markup = markup.replace(f'href="{page}"', f'href="{url}"')
+    markup = re.sub(r'href="(album-\d+\.html)"', lambda mm: f'href="{PREVIEW}{mm.group(1)}"', markup)
+    markup = markup.replace('src="assets/', f'src="{CDN}assets/')
+    html_part = f'<div id="welle-root">{markup.strip()}</div>'
+
+    css_part = """/* 아임웹 기본 화면 숨기기: 우리 화면이 들어간 페이지에서만 */
+body:has(#welle-root) #doz_header_wrap, body:has(#welle-root) #doz_footer_wrap,
+html.welle-mount #doz_header_wrap, html.welle-mount #doz_footer_wrap,
+html.welle-mount body > .section_wrap, html.welle-mount #site_alarm_slidemenu_container,
+html.welle-mount .alpha_instagram_feed { display: none !important; }
+#welle-root { visibility: hidden; }
+html.welle-mount body { margin: 0 !important; padding: 0 !important; font: 400 14px/1.75 var(--sans) !important; color: var(--ink-soft) !important; letter-spacing: -0.01em !important; word-break: keep-all !important; }
+html.welle-mount:not(.no-scroll) body { background: var(--paper) !important; }
+html.welle-mount.no-scroll body { background: transparent !important; }
+/* 디자인 파일이 다 불러와질 때까지 잠깐 가려 둠 (깨진 화면이 비치지 않게) */
+html.welle-wait body > .site-header, html.welle-wait body > .header-space, html.welle-wait body > main,
+html.welle-wait body > .site-footer, html.welle-wait body > .toast { visibility: hidden !important; }
+"""
+    fonts = ("https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Noto+Sans+KR:wght@300;400;500"
+             "&family=Noto+Serif+KR:wght@400;500&family=Domine:wght@400;500&display=swap")
+    js_list = ", ".join(f"'{CDN}assets/js/{x}'" for x in scripts)
+    js_part = f"""/* Welle 화면 불러오기: 아임웹 틀 밖(body 바로 아래)으로 옮긴 뒤, 디자인·동작 파일을 순서대로 불러옴 */
+(function () {{
+  var CDN = '{CDN}';
+  var H = document.documentElement, B = document.body;
+  function boot() {{
+    var R = document.getElementById('welle-root');
+    if (!R || H.classList.contains('welle-mount')) return;
+    H.classList.add('welle-mount', 'welle-wait');
+    {''.join(f"B.classList.add('{c}');" for c in body_cls)}
+    try {{
+      var w = sessionStorage.getItem('welleWater');
+      if (w) {{ sessionStorage.removeItem('welleWater'); w = JSON.parse(w);
+        H.style.setProperty('--wx', (w.x * 100).toFixed(1) + '%'); H.style.setProperty('--wy', ((1 - w.y) * 100).toFixed(1) + '%');
+        H.classList.add('page-fade'); setTimeout(function () {{ H.classList.remove('page-fade'); }}, 2000); }}
+      if (sessionStorage.getItem('welleSeamless')) {{ sessionStorage.removeItem('welleSeamless'); H.classList.add('seamless');
+        setTimeout(function () {{ H.classList.remove('seamless'); }}, 1500); }}
+    }} catch (e) {{}}
+    var f = document.createDocumentFragment();
+    while (R.firstChild) f.appendChild(R.firstChild);
+    B.insertBefore(f, B.firstChild);
+    R.parentNode.removeChild(R);
+    var waiting = 2;
+    function done() {{ if (--waiting <= 0) H.classList.remove('welle-wait'); }}
+    setTimeout(function () {{ H.classList.remove('welle-wait'); }}, 6000);   // 무슨 일이 있어도 6초 뒤엔 보이게
+    var lf = document.createElement('link'); lf.rel = 'stylesheet'; lf.href = '{fonts}'; document.head.appendChild(lf);
+    var lc = document.createElement('link'); lc.rel = 'stylesheet'; lc.href = CDN + 'assets/css/style.css';
+    lc.onload = lc.onerror = done; document.head.appendChild(lc);
+    var list = [{js_list}];
+    (function next(i) {{
+      if (i >= list.length) return;
+      var s = document.createElement('script'); s.src = list[i];
+      s.onload = s.onerror = function () {{ if (i === 0) done(); next(i + 1); }};
+      B.appendChild(s);
+    }})(0);
+  }}
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+}})();
+"""
+    return {"html": html_part, "css": css_part, "js": js_part}
+
+
 OUT.mkdir(parents=True, exist_ok=True)
+parts = export_custom("index.html", ["intro.js", "site.js"])
+for k, v in parts.items():
+    (OUT / f"custom_index_{k}.txt").write_text(v, encoding="utf-8")
+    print("custom", k, len(v), "chars")
 for page in ["index.html"]:
     code = export(page)
     out = OUT / ("imweb_" + page.replace(".html", ".txt"))
