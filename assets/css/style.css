@@ -428,19 +428,19 @@ details.privacy .terms { border: 0; border-top: 1px solid var(--line); height: 2
 }
 @media (max-width: 760px) { .hero__fade { height: 34px; -webkit-backdrop-filter: none; backdrop-filter: none; } }
 
-/* PC: 갤러리 띠가 아래에서 볼록한 수평선처럼 솟아오름 (위치·볼록함은 스크립트가 스크롤에 맞춰 넣음) */
+/* PC: 스크롤하면 사진 위로 포토카드가 회전하며 올라옴 (카드별 위치·각도는 스크립트가 매 프레임 넣음) */
+.has-dock main { position: relative; overflow: hidden; overflow: clip; }   /* 아래 끝 밖의 카드는 잘려서 '아래에서 올라오는' 모습 */
 .has-dock .flow {
-  margin-top: calc(-1 * var(--rise, 90px)); z-index: 3; background: #fff;
-  overflow: hidden; overflow: clip visible;            /* 옆으로는 자르고, 위로 솟은 곡선은 보이게 */
-  transform: translateY(var(--lift, 90px)); will-change: transform;
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;
+  padding: 0 0 clamp(26px, 4.5vh, 52px); background: none;
 }
-.has-dock .flow::before {                               /* 볼록거울 같은 윗변 */
-  content: ""; position: absolute; left: -12%; right: -12%; top: calc(-1 * var(--bulge, 36px) + 1px);
-  height: calc(var(--bulge, 36px) + 2px); background: #fff; pointer-events: none;
-  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-  box-shadow: 0 -10px 30px -12px rgba(13, 27, 38, .18);
+.has-dock .flow__track { padding: 90px 0; margin: -90px 0; }       /* 곡선으로 내려간 카드가 잘리지 않게 여유 */
+.has-dock .flow__row a {
+  opacity: 0; will-change: transform; transform-origin: 50% 100%;
+  border-radius: 3px; box-shadow: 0 14px 34px -10px rgba(0, 0, 0, .45);
 }
-.has-dock .flow__stage { transform: scale(var(--mag, .965)); transform-origin: 50% 100%; }
+.has-dock .flow__row a:hover img { transform: none; }
+.has-dock .hero__fade { display: none; }
 
 /* 홈 아래: 갤러리 사진이 천천히 옆으로 흐르는 띠 */
 .flow { position: relative; padding: clamp(28px, 4vw, 48px) 0 clamp(56px, 8vw, 88px); overflow: hidden; }
@@ -479,17 +479,12 @@ details.privacy .terms { border: 0; border-top: 1px solid var(--line); height: 2
 @media (hover: hover) and (pointer: fine) {
   .flow__hover {
     display: flex; align-items: center; justify-content: center;
-    position: absolute; inset: -56px 0; z-index: 2;
-    background: rgba(255,255,255,.22);
-    -webkit-backdrop-filter: blur(6px) saturate(115%); backdrop-filter: blur(6px) saturate(115%);
-    /* 네모난 경계 없이 사방으로 둥글게 흐려지도록 */
-    /* 좌우는 끝까지 덮고, 위아래 경계만 부드럽게 */
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 52px, #000 calc(100% - 52px), transparent 100%),
-                        linear-gradient(to right, transparent 0, #000 2%, #000 98%, transparent 100%);
-    -webkit-mask-composite: source-in;
-            mask-image: linear-gradient(to bottom, transparent 0, #000 52px, #000 calc(100% - 52px), transparent 100%),
-                        linear-gradient(to right, transparent 0, #000 2%, #000 98%, transparent 100%);
-            mask-composite: intersect;
+    position: absolute; inset: -110px 0; z-index: 2;
+    background: radial-gradient(ellipse 50% 50% at 50% 50%, rgba(255,255,255,.2), rgba(255,255,255,0));
+    -webkit-backdrop-filter: blur(7px) saturate(115%); backdrop-filter: blur(7px) saturate(115%);
+    /* 경계가 보이지 않게: 가운데는 흐리고 바깥으로 갈수록 서서히 사라짐 */
+    -webkit-mask-image: radial-gradient(ellipse 52% 50% at 50% 50%, #000 45%, transparent 100%);
+            mask-image: radial-gradient(ellipse 52% 50% at 50% 50%, #000 45%, transparent 100%);
     opacity: 0; transition: opacity .55s ease; cursor: pointer;
   }
   .flow__stage:hover .flow__hover, .flow__hover:focus-visible { opacity: 1; }
@@ -505,7 +500,7 @@ details.privacy .terms { border: 0; border-top: 1px solid var(--line); height: 2
   .flow__hover:active .flow__label { opacity: .7; }
   .flow__label span { display: inline-block; margin-left: .22em; font-size: .72em; transition: transform .4s ease; }
   .flow__hover:hover .flow__label > span { transform: translateX(8px); }
-  .flow__ripple { position: absolute; inset: 56px 0; width: 100%; height: calc(100% - 112px); pointer-events: none; image-rendering: auto; filter: blur(3px); }
+  .flow__ripple { position: absolute; inset: 110px 0; width: 100%; height: calc(100% - 220px); pointer-events: none; image-rendering: auto; filter: blur(3px); }
   .flow__cta { display: none; }   /* PC는 마우스를 올리면 뜨는 표시로 대신 */
 }
 

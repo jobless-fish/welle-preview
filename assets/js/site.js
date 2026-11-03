@@ -289,12 +289,11 @@
 
     function headerFull() { return parseFloat(getComputedStyle(root).getPropertyValue('--header-h')) || 190; }
     var mainEl = document.querySelector('main');
-    // PC: 스크롤하면 갤러리 띠가 아래에서 볼록한 수평선처럼 살짝 솟아오름 (맥 Dock처럼)
+    // PC: 스크롤하면 사진 위로 포토카드들이 아래에서 회전하며 올라옴
+    //     카드들은 수평선을 바라볼 때처럼 살짝 휜 곡선(가운데가 높고 양끝이 낮은) 위에 놓임
     var flowEl = document.querySelector('.flow');
     var dock = !lite && !reduce && !!flowEl;
-    var RISE = 90;          // 올라오며 사진을 덮는 거리(px)
     if (dock) body.classList.add('has-dock');
-    root.style.setProperty('--rise', RISE + 'px');
     var mobH = 0, mobW = 0;
     var sizedW = 0;
     function sizeHero(force) {
@@ -304,7 +303,8 @@
       sizedW = w;
       if (window.innerWidth > 760) {
         h = Math.min(h, window.innerHeight - H + 40);
-        if (dock) h += RISE;   // 갤러리 띠가 사진 아래를 덮으며 올라오는 만큼 사진을 길게
+        // 카드가 사진 위로 올라오므로, 전환이 끝났을 때 사진이 헤더 아래 화면을 꽉 채우도록 길게
+        if (dock) h = window.innerHeight + H;
       } else {
         // 모바일: 사진이 화면 대부분을 채우도록 (아래에 흐르는 사진이 살짝 보이게)
         // 주소창이 숨었다 나타날 때 높이가 출렁이지 않도록 폭이 바뀔 때만 다시 계산
@@ -343,23 +343,14 @@
       // → 스크롤해도 사진이 인물 위치를 기준으로 다시 맞춰져 인물이 계속 보임
       var hrect = hero.getBoundingClientRect();
       var topScreen = Math.max(base, 0);
-      // 갤러리 띠가 올라온 정도 (0 = 아직 아래, 1 = 다 올라옴)
-      var q = 0, cover = 0;
+      // 카드가 올라온 정도 (0 = 아래에 숨음, 1 = 다 올라옴)
+      var cover = 0;
       if (dock) {
-        // 스크롤을 시작하면 화면 아래 끝에 숨어 있던 띠가 스크롤보다 빠르게 솟아오름
-        var vh0 = window.innerHeight;
-        q = Math.min(1, y / (H * SPAN * 0.8));
-        q = 1 - Math.pow(1 - q, 2.2);                             // 처음엔 빠르게, 끝에서 천천히 멈춤
-        var bulge = 14 + 46 * (1 - q);                            // 볼록한 정도 — 올라오며 거의 수평선으로
-        var lift = Math.max(0, vh0 * 0.45 * (1 - q));
-        // 띠와 사진 사이가 벌어져 빈 흰 줄이 보이지 않도록: 띠 윗변은 사진 아래 끝(또는 화면 아래)보다 내려가지 않음
-        lift = Math.min(lift, RISE + Math.max(0, hrect.bottom - vh0) + bulge * 0.5);
-        flowEl.style.setProperty('--lift', lift.toFixed(1) + 'px');
-        flowEl.style.setProperty('--bulge', bulge.toFixed(1) + 'px');
-        flowEl.style.setProperty('--mag', (0.93 + 0.07 * q).toFixed(4));
-        cover = RISE - lift + bulge;                              // 사진 아래를 덮고 있는 높이
+        dockQ = Math.min(1, y / (H * SPAN * 0.9));
+        cover = flowEl.offsetHeight * 0.4 * dockQ;               // 인물은 카드 위쪽에 보이도록
+        startDock();
       }
-      var botScreen = Math.min(hrect.bottom - cover, window.innerHeight);
+      var botScreen = Math.min(hrect.bottom, window.innerHeight) - cover;
       if (botScreen - topScreen < 60) topScreen = Math.max(hrect.top, botScreen - 60);
       // 1px 단위로만 바꿔서 같은 값으로 사진을 다시 그리는 일을 줄임
       var ext = Math.round(hrect.top - topScreen), exb = Math.round(Math.max(0, hrect.bottom - botScreen));
@@ -415,12 +406,57 @@
       var hr = hero.getBoundingClientRect(), vh = window.innerHeight;
       var visTop = Math.max(hr.top, 0);            // 로고·메뉴 아래부터 (메뉴와 겹치지 않게)
       var visBot = Math.min(hr.bottom, vh);
-      if (info) info.style.bottom = Math.max(window.innerWidth < 761 ? 22 : 30, hr.bottom - vh + 30, cover + 22) + 'px';
+      if (info) info.style.bottom = (dock ? flowEl.offsetHeight + 6 : Math.max(window.innerWidth < 761 ? 22 : 30, hr.bottom - vh + 30)) + 'px';
       if (info) visBot = Math.min(visBot, info.getBoundingClientRect().top - 8);   // 하단 정보와 겹치지 않게
       if (dotsWrap) dotsWrap.style.top = ((visTop + visBot) / 2 - hr.top) + 'px';
       body.classList.toggle('is-top', p < 0.02);
     }
     function schedule() { if (!ticking) { ticking = true; requestAnimationFrame(render); } }
+
+    // ---- 포토카드: 매 프레임 각 카드의 화면 위치에 따라 곡선·기울기·올라옴을 계산 ----
+    var dockQ = 0, dockOn = false;
+    var cards = dock ? [].slice.call(flowEl.querySelectorAll('.flow__row a')) : [];
+    var flowTrack = dock ? flowEl.querySelector('.flow__track') : null;
+    var flowStage = dock ? flowEl.querySelector('.flow__stage') : null;
+    var cardInfo = cards.map(function (a, i) {
+      // 카드마다 살짝 다른 기울기 (사진첩에 흩어 놓은 듯)
+      var r = Math.sin(i * 12.9898) * 43758.5453; r = r - Math.floor(r);
+      return { el: a, jit: (r - 0.5) * 3.2, spin: (r - 0.5) * 26 };
+    });
+    function startDock() { if (!dockOn) { dockOn = true; requestAnimationFrame(dockFrame); } }
+    function dockFrame() {
+      var W = window.innerWidth, half = W / 2;
+      var hb = hero.getBoundingClientRect().bottom;
+      if (dockQ <= 0 || hb < -50 || document.hidden) {        // 안 보일 때는 쉬기
+        dockOn = false;
+        if (dockQ <= 0) cardInfo.forEach(function (c) { c.el.style.opacity = '0'; });
+        return;
+      }
+      var m = new DOMMatrixReadOnly(getComputedStyle(flowTrack).transform);
+      var sx = flowStage.getBoundingClientRect().left + m.m41;
+      var C = Math.min(70, W * 0.032);                          // 곡선 깊이 (양끝이 이만큼 낮아짐)
+      for (var i = 0; i < cardInfo.length; i++) {
+        var c = cardInfo[i], a = c.el;
+        if (c.w == null) { c.x = a.offsetLeft + a.parentNode.offsetLeft; c.w = a.offsetWidth; }
+        var cx = sx + c.x + c.w / 2;
+        if (cx < -400 || cx > W + 400) continue;                // 화면 밖 카드는 건너뜀
+        var u = Math.max(-1.3, Math.min(1.3, (cx - half) / half));
+        // 가운데부터 먼저, 양끝은 조금 늦게 올라옴
+        var t = Math.max(0, Math.min(1, (dockQ - Math.abs(u) * 0.22) / 0.78));
+        var e = 1 - Math.pow(1 - t, 3);
+        var arc = C * u * u;                                    // 수평선처럼 휜 곡선
+        var ang = Math.atan(2 * C * u / half) * 57.3 + c.jit;   // 곡선을 따라 기울어짐
+        var rise = (1 - e) * 260;
+        a.style.opacity = Math.min(1, e * 1.8).toFixed(3);
+        a.style.transform = 'perspective(1000px) translate3d(0,' + (arc + rise).toFixed(1) + 'px,0) rotateX(' + (58 * (1 - e)).toFixed(2) +
+          'deg) rotate(' + (ang + c.spin * (1 - e)).toFixed(2) + 'deg) scale(' + (0.86 + 0.14 * e).toFixed(4) + ')';
+      }
+      requestAnimationFrame(dockFrame);
+    }
+    if (dock) {
+      window.addEventListener('resize', function () { cardInfo.forEach(function (c) { c.w = null; }); });
+      document.addEventListener('visibilitychange', function () { if (!document.hidden && dockQ > 0) startDock(); });
+    }
 
     window.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', function () { sizeHero(); schedule(); });
