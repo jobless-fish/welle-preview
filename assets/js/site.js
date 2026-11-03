@@ -304,7 +304,7 @@
       if (window.innerWidth > 760) {
         h = Math.min(h, window.innerHeight - H + 40);
         // 카드가 사진 위로 올라오므로, 전환이 끝났을 때 사진이 헤더 아래 화면을 꽉 채우도록 길게
-        if (dock) h = window.innerHeight + H;
+        if (dock) h = window.innerHeight + H + 2;
       } else {
         // 모바일: 사진이 화면 대부분을 채우도록 (아래에 흐르는 사진이 살짝 보이게)
         // 주소창이 숨었다 나타날 때 높이가 출렁이지 않도록 폭이 바뀔 때만 다시 계산
