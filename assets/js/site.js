@@ -318,6 +318,8 @@
         h = dock ? mobH - H : Math.max(h, mobH - H - 96);
       }
       root.style.setProperty('--hero-h', Math.round(h) + 'px');
+      // 한 화면 모드: 폰 브라우저 아래 도구막대 뒤까지 사진이 채워지도록 '가장 큰 화면 높이'(lvh) 기준
+      if (dock && window.CSS && CSS.supports('height', '100lvh')) root.style.setProperty('--hero-h', 'calc(100lvh - ' + Math.round(H) + 'px)');
       // 전환 거리: 기본은 헤더 높이 × 2, 페이지가 짧으면 그만큼 줄여서 아래에 빈 여백이 생기지 않게
       SPAN = 2;
       if (mainEl && !dock) {
@@ -351,7 +353,7 @@
       var topScreen = Math.max(base, 0);
       // 카드가 올라온 정도 (0 = 아래에 숨음, 1 = 다 올라옴)
       var cover = 0;
-      var botScreen = Math.min(hrect.bottom, window.innerHeight) - cover;
+      var botScreen = dock ? hrect.bottom : Math.min(hrect.bottom, window.innerHeight) - cover;   // 한 화면 모드: 사진은 항상 아래 끝까지
       if (botScreen - topScreen < 60) topScreen = Math.max(hrect.top, botScreen - 60);
       // 1px 단위로만 바꿔서 같은 값으로 사진을 다시 그리는 일을 줄임
       var ext = Math.round(hrect.top - topScreen), exb = Math.round(Math.max(0, hrect.bottom - botScreen));
@@ -433,7 +435,8 @@
       dockQ += (tg - dockQ) * (tg > dockQ ? 0.075 : 0.09);
       if (Math.abs(tg - dockQ) < 0.002) dockQ = tg;
       flowEl.classList.toggle('is-up', dockQ > 0.85);
-      if (info) info.style.bottom = (30 + (flowEl.offsetHeight - 24) * dockQ).toFixed(1) + 'px';   // 정보는 카드 위로 비켜 줌
+      var tbOff = Math.max(0, hero.getBoundingClientRect().bottom - window.innerHeight);   // 폰 아래 도구막대에 가려지는 높이
+      if (info) info.style.bottom = (tbOff + 30 + (flowEl.offsetHeight - tbOff - 24) * dockQ).toFixed(1) + 'px';   // 정보는 카드 위로 비켜 줌
       if (dotsWrap && info) dotsWrap.style.top = ((Math.max(0, hero.getBoundingClientRect().top) + info.getBoundingClientRect().top - 8) / 2 - hero.getBoundingClientRect().top) + 'px';
       if ((dockQ <= 0 && tg === 0) || document.hidden) {        // 다 내려갔으면 쉬기
         dockOn = false;
