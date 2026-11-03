@@ -62,8 +62,8 @@ for a in albums:
     a["photos"] = a["imgs"][1:] or a["imgs"]
 
 
-NAV = [("index.html", "Home"), ("gallery.html", "Gallery"),
-       ("product.html", "Product"), ("reservation.html", "Reservation")]
+NAV = [("./", "Home"), ("gallery", "Gallery"),
+       ("product", "Product"), ("reservation", "Reservation")]   # 주소에 .html 없이 (GitHub Pages가 알아서 찾아 줌)
 
 INSTA_ICON = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">'
               '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/>'
@@ -102,7 +102,7 @@ if(sessionStorage.getItem('welleSeamless')){{sessionStorage.removeItem('welleSea
 <body{f' class="{body_class}"' if body_class else ""}>
 <header class="site-header">
   <div class="site-header__inner">
-    <a class="logo" href="index.html" aria-label="Welle Fotografien 홈"><img src="assets/img/logo.svg" alt="Welle Fotografien" width="860" height="510"></a>
+    <a class="logo" href="./" aria-label="Welle Fotografien 홈"><img src="assets/img/logo.svg" alt="Welle Fotografien" width="860" height="510"></a>
     <nav class="nav" aria-label="주 메뉴">{nav}</nav>
   </div>
 </header>
@@ -147,7 +147,7 @@ for a in albums:
     for k in (len(ph) // 4, (len(ph) * 3) // 4):
         flow_pick.append((a["id"], a["title"], ph[k]))
 flow_items = "".join(
-    f'<a href="album-{aid}.html" aria-label="{html.escape(t)} 앨범 보기"><img src="{up(f, 520)}" alt="" decoding="async"></a>'
+    f'<a href="album-{aid}" aria-label="{html.escape(t)} 앨범 보기"><img src="{up(f, 520)}" alt="" decoding="async"></a>'
     for aid, t, f in flow_pick)
 
 home_body = f"""
@@ -168,11 +168,11 @@ home_body = f"""
       <div class="flow__row">{flow_items}</div>
       <div class="flow__row" aria-hidden="true">{flow_items.replace('<a ', '<a tabindex="-1" ')}</div>
     </div>
-    <a class="flow__hover" href="gallery.html" data-water aria-label="갤러리로 이동">
+    <a class="flow__hover" href="gallery" data-water aria-label="갤러리로 이동">
       <canvas class="flow__ripple" aria-hidden="true"></canvas>
       <span class="flow__label">Gallery <span aria-hidden="true">→</span></span>
     </a>
-    <a class="flow__cta" href="gallery.html" data-water>Gallery <span aria-hidden="true">→</span></a>
+    <a class="flow__cta" href="gallery" data-water>Gallery <span aria-hidden="true">→</span></a>
   </div>
 </section>
 """
@@ -193,7 +193,7 @@ gx_data = json.dumps({"up": UP, "albums": [{"id": a["id"], "title": a["title"], 
 write("gallery.html", page("Gallery", "Gallery", f"""
 <h1 class="sr-only">Gallery</h1>
 <section class="gx" aria-label="갤러리">
-  <a class="gx__big" href="album-{first['id']}.html" data-water aria-label="{html.escape(first['title'])} 사진 전체보기">
+  <a class="gx__big" href="album-{first['id']}" data-water aria-label="{html.escape(first['title'])} 사진 전체보기">
     <div class="gx__stage"></div>
     <div class="gx__shade" aria-hidden="true"></div>
     <div class="gx__meta"><span class="gx__title">{html.escape(first['title'])}</span><span class="gx__count">{len(first['photos'])} photos</span><span class="gx__go">View detail<i aria-hidden="true"></i></span></div>
@@ -214,9 +214,9 @@ for i, a in enumerate(albums):
 <div class="container">
   <div class="page-head"><span class="eyebrow">Gallery</span><h1>{html.escape(a['title'])}</h1><p>{len(a['photos'])} photos</p></div>
   <div class="album-nav">
-    <a href="album-{prev_a['id']}.html">‹ {html.escape(prev_a['title'])}</a>
-    <a href="gallery.html">All</a>
-    <a href="album-{next_a['id']}.html">{html.escape(next_a['title'])} ›</a>
+    <a href="album-{prev_a['id']}">‹ {html.escape(prev_a['title'])}</a>
+    <a href="gallery">All</a>
+    <a href="album-{next_a['id']}">{html.escape(next_a['title'])} ›</a>
   </div>
   <div class="masonry">{photos}</div>
 </div>"""))
@@ -266,7 +266,7 @@ product_body = f"""
     </table>
   </section>
 
-  <div class="cta-row"><a class="btn" href="reservation.html">Reservation</a></div>
+  <div class="cta-row"><a class="btn" href="reservation">Reservation</a></div>
 </div>"""
 write("product.html", page("Product", "Product", product_body))
 

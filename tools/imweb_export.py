@@ -18,10 +18,10 @@ PREVIEW = "https://jobless-fish.github.io/welle-preview/"
 
 # 테스트 단계: 홈 외의 페이지는 아직 아임웹에 없으니 깃 미리보기 주소로 연결
 LINKS = {
-    "index.html": "#",
-    "gallery.html": PREVIEW + "gallery.html",
-    "product.html": PREVIEW + "product.html",
-    "reservation.html": PREVIEW + "reservation.html",
+    "./": "#",
+    "gallery": PREVIEW + "gallery",
+    "product": PREVIEW + "product",
+    "reservation": PREVIEW + "reservation",
 }
 
 HIDE_CSS = """<style>
@@ -52,7 +52,7 @@ def export(name: str) -> str:
     def fix(html: str) -> str:
         for page, url in LINKS.items():
             html = html.replace(f'href="{page}"', f'href="{url}"')
-        html = re.sub(r'href="(album-\d+\.html)"', lambda mm: f'href="{PREVIEW}{mm.group(1)}"', html)
+        html = re.sub(r'href="(album-\d+)"', lambda mm: f'href="{PREVIEW}{mm.group(1)}"', html)
         html = html.replace('src="assets/', f'src="{CDN}assets/').replace('href="assets/', f'href="{CDN}assets/')
         return html
 
@@ -92,7 +92,7 @@ def export_custom(name: str, scripts):
     markup = body[:re.search(r'<script src="assets/js/site\.js', body).start()]
     for page, url in LINKS.items():
         markup = markup.replace(f'href="{page}"', f'href="{url}"')
-    markup = re.sub(r'href="(album-\d+\.html)"', lambda mm: f'href="{PREVIEW}{mm.group(1)}"', markup)
+    markup = re.sub(r'href="(album-\d+)"', lambda mm: f'href="{PREVIEW}{mm.group(1)}"', markup)
     markup = markup.replace('src="assets/', f'src="{CDN}assets/')
     html_part = f'<div id="welle-root">{markup.strip()}</div>'
 

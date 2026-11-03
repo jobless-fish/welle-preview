@@ -742,7 +742,7 @@
     function setBig(id) {
       featured = id; idx = 0;
       var a = byId[id];
-      big.setAttribute('href', 'album-' + id + '.html');
+      big.setAttribute('href', 'album-' + id);
       big.setAttribute('aria-label', a.title + ' 사진 전체보기');
       big.classList.add('is-swapping');
       setTimeout(function () {
