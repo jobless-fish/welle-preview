@@ -61,8 +61,17 @@ def product_ids(base: str):
 
 def album(base: str, idx: int):
     t = get(f"{base}{LIST_PATH}/?idx={idx}")
-    m = re.search(r'<meta property="og:title" content="([^"]*)"', t)
-    title = html.unescape(m.group(1)).split(" : ")[0].strip() if m else str(idx)
+    # 상품 이름: 상세 화면 제목(view_tit) → 없으면 og:title → 없으면 <title>
+    title = ""
+    m = re.search(r'class="view_tit[^"]*"[^>]*>(.*?)</', t, re.S)
+    if m:
+        title = re.sub(r"<[^>]+>", "", m.group(1))
+    if not title.strip():
+        m = (re.search(r'<meta[^>]+property="og:title"[^>]+content="([^"]*)"', t)
+             or re.search(r'<meta[^>]+content="([^"]*)"[^>]+property="og:title"', t)
+             or re.search(r"<title>(.*?)</title>", t, re.S))
+        title = m.group(1).split(" : ")[0] if m else str(idx)
+    title = html.unescape(title).strip()
     # 대표 이미지(상품 사진) — 'item _item' 칸 안의 이미지
     mains = re.findall(r'class="item _item"[^>]*>.*?<img[^>]+src="([^"]+)"', t, re.S)
     # 상세설명 사진 — PC용 상세 템플릿 안, 올린 순서대로
