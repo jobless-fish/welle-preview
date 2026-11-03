@@ -347,8 +347,8 @@
       var q = 0, cover = 0;
       if (dock) {
         var flowTop0 = hrect.bottom - RISE;                       // 다 올라왔을 때 띠의 윗변 (화면 기준)
-        q = Math.min(1, Math.max(0, (window.innerHeight - flowTop0) / (window.innerHeight * 0.42)));
-        q = 1 - Math.pow(1 - q, 3);                               // 처음엔 빠르게, 끝에서 천천히 멈춤
+        q = Math.min(1, Math.max(0, (window.innerHeight - flowTop0) / (window.innerHeight * 0.55)));
+        q = 1 - Math.pow(1 - q, 2.2);                               // 처음엔 빠르게, 끝에서 천천히 멈춤
         var lift = RISE * (1 - q);
         var bulge = 10 + 26 * (1 - q);                            // 볼록한 정도 — 올라오며 거의 수평선으로
         flowEl.style.setProperty('--lift', lift.toFixed(1) + 'px');
