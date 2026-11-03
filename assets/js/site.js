@@ -191,6 +191,10 @@
     function pad(n) { return (n < 10 ? '0' : '') + n; }
     function load(img) { if (img && img.dataset.src) { img.src = img.dataset.src; img.removeAttribute('data-src'); } }
     function show(i) {
+      // 이전 사진은 새 사진이 다 나타날 때까지 아래에 그대로 둠 → 교차 중에 배경·경계선이 비치지 않음
+      slides.forEach(function (sl) { sl.classList.remove('is-prev'); });
+      var prev = slides[cur];
+      if (((i % slides.length) + slides.length) % slides.length !== cur) { prev.classList.add('is-prev'); setTimeout(function () { prev.classList.remove('is-prev'); }, 1800); }
       slides[cur].classList.remove('is-active'); dots[cur].classList.remove('is-active');
       cur = (i + slides.length) % slides.length;
       load(slides[cur].querySelector('img'));
@@ -352,10 +356,8 @@
         h = dock ? mobH - H : Math.max(h, mobH - H - 96);
       }
       root.style.setProperty('--hero-h', Math.round(h) + 'px');
-      // 한 화면 모드: 폰 브라우저 아래 도구막대 뒤까지 사진이 채워지도록 '가장 큰 화면 높이'(lvh) 기준
-      // 폰은 맨 아래 홈 표시줄 영역까지 넉넉히 넘치게 (스크롤이 없어 넘친 부분은 보이지 않음)
-      if (dock && window.CSS && CSS.supports('height', '100lvh')) root.style.setProperty('--hero-h', 'calc(100lvh - ' + Math.round(H) + 'px' +
-        (window.innerWidth <= 760 ? ' + env(safe-area-inset-bottom, 0px) + 40px' : '') + ')');
+      // 한 화면 모드: 사진은 주소창 위(보이는 화면, svh)까지 — 그 아래는 사진 아래쪽 색으로 칠함
+      if (dock && window.CSS && CSS.supports('height', '100svh')) root.style.setProperty('--hero-h', 'calc(100svh - ' + Math.round(H) + 'px)');
       // 전환 거리: 기본은 헤더 높이 × 2, 페이지가 짧으면 그만큼 줄여서 아래에 빈 여백이 생기지 않게
       SPAN = 2;
       if (mainEl && !dock) {
@@ -463,6 +465,15 @@
       var r = Math.sin(i * 12.9898) * 43758.5453; r = r - Math.floor(r);
       return { el: a, jit: (r - 0.5) * 3.2, spin: (r - 0.5) * 26 };
     });
+    // 인스타·사업자 정보: 카드가 내려가 있으면 사진 아래쪽, 올라오면 카드 위로 비켜 줌
+    function placeInfo() {
+      if (!info) return;
+      var hr0 = hero.getBoundingClientRect();
+      var tbOff = Math.max(0, hr0.bottom - window.innerHeight);   // 화면 밖으로 넘친 높이 (있으면 그만큼 올림)
+      var base = (window.innerWidth < 761 ? 18 : 30) + tbOff;
+      info.style.bottom = (base + (flowEl.offsetHeight - base + 6) * dockQ).toFixed(1) + 'px';
+      if (dotsWrap) dotsWrap.style.top = ((Math.max(0, hr0.top) + info.getBoundingClientRect().top - 8) / 2 - hr0.top) + 'px';
+    }
     function startDock() { if (!dockOn) { dockOn = true; requestAnimationFrame(dockFrame); } }
     function dockFrame() {
       var W = window.innerWidth, half = W / 2;
@@ -471,9 +482,7 @@
       dockQ += (tg - dockQ) * (tg > dockQ ? 0.075 : 0.09);
       if (Math.abs(tg - dockQ) < 0.002) dockQ = tg;
       flowEl.classList.toggle('is-up', dockQ > 0.85);
-      var tbOff = Math.max(0, hero.getBoundingClientRect().bottom - window.innerHeight);   // 폰 아래 도구막대에 가려지는 높이
-      if (info) info.style.bottom = (tbOff + 30 + (flowEl.offsetHeight - tbOff - 24) * dockQ).toFixed(1) + 'px';   // 정보는 카드 위로 비켜 줌
-      if (dotsWrap && info) dotsWrap.style.top = ((Math.max(0, hero.getBoundingClientRect().top) + info.getBoundingClientRect().top - 8) / 2 - hero.getBoundingClientRect().top) + 'px';
+      placeInfo();
       if ((dockQ <= 0 && tg === 0) || document.hidden) {        // 다 내려갔으면 쉬기
         dockOn = false;
         if (dockQ <= 0) cardInfo.forEach(function (c) { c.el.style.opacity = '0'; });
@@ -501,7 +510,8 @@
       requestAnimationFrame(dockFrame);
     }
     if (dock) {
-      window.addEventListener('resize', function () { cardInfo.forEach(function (c) { c.w = null; }); });
+      placeInfo();   // 처음 들어왔을 때부터 제자리에
+      window.addEventListener('resize', function () { cardInfo.forEach(function (c) { c.w = null; }); placeInfo(); });
       document.addEventListener('visibilitychange', function () { if (!document.hidden && dockQ > 0) startDock(); });
       // 마우스: 화면 아래쪽 구역에 들어오면 올라오고, 나가면 내려감
       document.addEventListener('mousemove', function (ev) {
