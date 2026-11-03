@@ -349,7 +349,6 @@
         // 띠 자리가 화면 아래로 들어오기 시작할 때부터, 다 들어올 때까지 → 회전·올라옴이 화면 안에서 보이게
         var fr = flowEl.getBoundingClientRect(), fh = flowEl.offsetHeight || 1;
         dockQ = Math.max(0, Math.min(1, (window.innerHeight - fr.top) / (fh * 0.95)));
-        cover = flowEl.offsetHeight * 0.4 * dockQ;               // 인물은 카드 위쪽에 보이도록
         startDock();
       }
       var botScreen = Math.min(hrect.bottom, window.innerHeight) - cover;

@@ -440,6 +440,8 @@ details.privacy .terms { border: 0; border-top: 1px solid var(--line); height: 2
   border-radius: 3px; box-shadow: 0 14px 34px -10px rgba(0, 0, 0, .45);
 }
 .has-dock .flow__row a:hover img { transform: none; }
+.has-dock .flow__row { gap: 16px; padding-right: 16px; }
+.has-dock .flow__row img { height: clamp(120px, 10vw, 190px); }   /* 사진 위에 얹히는 작은 포토카드 크기 */
 .has-dock .hero__fade { display: none; }
 
 /* 홈 아래: 갤러리 사진이 천천히 옆으로 흐르는 띠 */
