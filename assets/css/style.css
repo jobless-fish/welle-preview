@@ -429,7 +429,7 @@ details.privacy .terms { border: 0; border-top: 1px solid var(--line); height: 2
 @media (max-width: 760px) { .hero__fade { height: 34px; -webkit-backdrop-filter: none; backdrop-filter: none; } }
 
 /* PC: 스크롤하면 사진 위로 포토카드가 회전하며 올라옴 (카드별 위치·각도는 스크립트가 매 프레임 넣음) */
-.has-dock main { position: relative; overflow: hidden; overflow: clip; }   /* 아래 끝 밖의 카드는 잘려서 '아래에서 올라오는' 모습 */
+.has-dock main { position: relative; }   /* 화면 아래 끝 밖의 카드는 화면(스크롤 없음)에서 잘려 '아래에서 올라오는' 모습 */
 .has-dock .flow {
   position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;
   padding: 0 0 clamp(26px, 4.5vh, 52px); background: none;
