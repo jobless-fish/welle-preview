@@ -433,6 +433,7 @@ details.privacy .terms { border: 0; border-top: 1px solid var(--line); height: 2
 .has-dock .flow {
   position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;
   padding: 0 0 clamp(26px, 4.5vh, 52px); background: none;
+  overflow: visible;   /* 위로 솟은 카드와 블러가 띠 윗선에서 잘리지 않게 */
 }
 .has-dock .flow__track { padding: 90px 0; margin: -90px 0; }       /* 곡선으로 내려간 카드가 잘리지 않게 여유 */
 .has-dock .flow__row a {

@@ -445,7 +445,7 @@
       var C = Math.min(70, W * 0.032);                          // 곡선 깊이 (양끝이 이만큼 낮아짐)
       for (var i = 0; i < cardInfo.length; i++) {
         var c = cardInfo[i], a = c.el;
-        if (c.w == null) { c.x = a.offsetLeft + a.parentNode.offsetLeft; c.w = a.offsetWidth; }
+        if (c.w == null) { c.x = a.offsetLeft; c.w = a.offsetWidth; }   // offsetLeft는 이미 띠 기준 위치
         var cx = sx + c.x + c.w / 2;
         if (cx < -400 || cx > W + 400) continue;                // 화면 밖 카드는 건너뜀
         var u = Math.max(-1.3, Math.min(1.3, (cx - half) / half));
