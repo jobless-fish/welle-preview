@@ -196,7 +196,7 @@ write("gallery.html", page("Gallery", "Gallery", f"""
   <a class="gx__big" href="album-{first['id']}.html" data-water aria-label="{html.escape(first['title'])} 사진 전체보기">
     <div class="gx__stage"></div>
     <div class="gx__shade" aria-hidden="true"></div>
-    <div class="gx__meta"><span class="gx__title">{html.escape(first['title'])}</span><span class="gx__count">{len(first['photos'])} photos</span><span class="gx__go">View album<i aria-hidden="true"></i></span></div>
+    <div class="gx__meta"><span class="gx__title">{html.escape(first['title'])}</span><span class="gx__count">{len(first['photos'])} photos</span><span class="gx__go">View detail<i aria-hidden="true"></i></span></div>
   </a>
   <div class="gx__grid" style="--rows:{max(1, (len(rest) + 1) // 2)}">{gx_tiles}
   </div>
