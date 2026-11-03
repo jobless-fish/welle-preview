@@ -283,7 +283,7 @@
     var mbNode = mbHost.querySelector('feGaussianBlur');
     var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     // 폰·태블릿: 무거운 효과(실시간 블러·모션블러·사진 상자 재계산)를 빼서 스크롤이 버벅이지 않게
-    var lite = window.matchMedia && matchMedia('(hover: none), (pointer: coarse), (max-width: 760px)').matches;
+    var lite = window.matchMedia && matchMedia('(hover: none), (max-width: 760px)').matches;
     if (lite) { path.removeAttribute('filter'); topBlur.style.display = 'none'; }
     var mb = 0, lastY = window.scrollY, lastT = performance.now();
 
@@ -346,14 +346,17 @@
       // 갤러리 띠가 올라온 정도 (0 = 아직 아래, 1 = 다 올라옴)
       var q = 0, cover = 0;
       if (dock) {
-        var flowTop0 = hrect.bottom - RISE;                       // 다 올라왔을 때 띠의 윗변 (화면 기준)
-        q = Math.min(1, Math.max(0, (window.innerHeight - flowTop0) / (window.innerHeight * 0.55)));
-        q = 1 - Math.pow(1 - q, 2.2);                               // 처음엔 빠르게, 끝에서 천천히 멈춤
-        var lift = RISE * (1 - q);
-        var bulge = 10 + 26 * (1 - q);                            // 볼록한 정도 — 올라오며 거의 수평선으로
+        // 스크롤을 시작하면 화면 아래 끝에 숨어 있던 띠가 스크롤보다 빠르게 솟아오름
+        var vh0 = window.innerHeight;
+        q = Math.min(1, y / (H * SPAN * 0.8));
+        q = 1 - Math.pow(1 - q, 2.2);                             // 처음엔 빠르게, 끝에서 천천히 멈춤
+        var bulge = 14 + 46 * (1 - q);                            // 볼록한 정도 — 올라오며 거의 수평선으로
+        var lift = Math.max(0, vh0 * 0.45 * (1 - q));
+        // 띠와 사진 사이가 벌어져 빈 흰 줄이 보이지 않도록: 띠 윗변은 사진 아래 끝(또는 화면 아래)보다 내려가지 않음
+        lift = Math.min(lift, RISE + Math.max(0, hrect.bottom - vh0) + bulge * 0.5);
         flowEl.style.setProperty('--lift', lift.toFixed(1) + 'px');
         flowEl.style.setProperty('--bulge', bulge.toFixed(1) + 'px');
-        flowEl.style.setProperty('--mag', (0.965 + 0.035 * q).toFixed(4));
+        flowEl.style.setProperty('--mag', (0.93 + 0.07 * q).toFixed(4));
         cover = RISE - lift + bulge;                              // 사진 아래를 덮고 있는 높이
       }
       var botScreen = Math.min(hrect.bottom - cover, window.innerHeight);
