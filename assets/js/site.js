@@ -190,11 +190,27 @@
     hero.style.setProperty('--slide-ms', SLIDE_MS + 'ms');
     function pad(n) { return (n < 10 ? '0' : '') + n; }
     function load(img) { if (img && img.dataset.src) { img.src = img.dataset.src; img.removeAttribute('data-src'); } }
+    var prevTimer = null;
     function show(i) {
       // 이전 사진은 새 사진이 다 나타날 때까지 아래에 그대로 둠 → 교차 중에 배경·경계선이 비치지 않음
-      slides.forEach(function (sl) { sl.classList.remove('is-prev'); });
-      var prev = slides[cur];
-      if (((i % slides.length) + slides.length) % slides.length !== cur) { prev.classList.add('is-prev'); setTimeout(function () { prev.classList.remove('is-prev'); }, 1800); }
+      // 바뀌는 도중에 다시 누르면: 지금 보이는 모습(반쯤 섞인 상태)을 그대로 아래에 붙잡아 두고 그 위로 새 사진을 올림
+      //   → 이전 사진이 번쩍 튀어나오지 않음
+      var nx = ((i % slides.length) + slides.length) % slides.length;
+      if (nx !== cur) {
+        var out = slides[cur], o = parseFloat(getComputedStyle(out).opacity);
+        clearTimeout(prevTimer);
+        slides.forEach(function (sl) {
+          if (sl === slides[nx]) sl.classList.remove('is-prev2');                                            // 새로 나타날 사진은 밑장에서 뺌
+          else if (sl.classList.contains('is-prev') && sl !== out && o < 0.999) sl.classList.add('is-prev2');   // 아직 비쳐 보이는 밑장은 유지
+          else if (sl !== out) sl.classList.remove('is-prev2');
+          sl.classList.remove('is-prev');
+        });
+        out.style.setProperty('--po', o.toFixed(3));
+        out.classList.add('is-prev');
+        prevTimer = setTimeout(function () {
+          slides.forEach(function (sl) { sl.classList.remove('is-prev', 'is-prev2'); sl.style.removeProperty('--po'); });
+        }, 1800);
+      }
       slides[cur].classList.remove('is-active'); dots[cur].classList.remove('is-active');
       cur = (i + slides.length) % slides.length;
       load(slides[cur].querySelector('img'));
