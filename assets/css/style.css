@@ -461,7 +461,7 @@ html.no-scroll body { background: transparent; }
   .has-dock .flow__row { gap: 10px; padding-right: 10px; }
   .has-dock .flow__row img { height: clamp(104px, 29vw, 150px); }
   /* 카드는 아래 도구막대에 가리지 않게 보이는 화면(svh) 안쪽에 */
-  .has-dock .flow { padding-bottom: clamp(18px, 4vh, 36px); padding-bottom: clamp(18px, 4svh, 36px); }
+  .has-dock .flow { padding-bottom: clamp(34px, 6vh, 60px); padding-bottom: clamp(34px, 6svh, 60px); }   /* 기울어진 카드 모서리가 화면 아래에서 잘리지 않게 */
   .has-dock .flow__cta, .has-dock .flow__stage::after { transition: opacity .45s ease; }
   .has-dock .flow:not(.is-up) .flow__cta, .has-dock .flow:not(.is-up) .flow__stage::after { opacity: 0; pointer-events: none; }
 }

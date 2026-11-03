@@ -509,7 +509,7 @@
       var C = Math.min(70, W * (W < 761 ? 0.05 : 0.032));                          // 곡선 깊이 (양끝이 이만큼 낮아짐)
       for (var i = 0; i < cardInfo.length; i++) {
         var c = cardInfo[i], a = c.el;
-        if (c.w == null) { c.x = a.offsetLeft; c.w = a.offsetWidth; }   // offsetLeft는 이미 띠 기준 위치
+        c.x = a.offsetLeft; c.w = a.offsetWidth;   // 매 프레임 다시 잼 (사진이 늦게 불러와져 폭이 바뀌어도 궤도가 어긋나지 않게)
         var cx = sx + c.x + c.w / 2;
         if (cx < -400 || cx > W + 400) continue;                // 화면 밖 카드는 건너뜀
         var u = Math.max(-1.3, Math.min(1.3, (cx - half) / half));
