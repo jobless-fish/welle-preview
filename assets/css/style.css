@@ -215,6 +215,8 @@ main { min-height: 50vh; }
 .masonry a { display: block; margin: 0 0 10px; break-inside: avoid; background: var(--paper-2); cursor: zoom-in; }
 .masonry img { width: 100%; height: auto; opacity: 0; transition: opacity .6s ease; }
 .masonry img.is-loaded { opacity: 1; }
+/* 물결 전환으로 이미 보여준 페이지: 사진이 다시 서서히 나타나지 않게 */
+html.seamless .masonry img { transition: none; }
 @media (max-width: 640px) { .masonry { columns: 2; column-gap: 6px; } .masonry a { margin-bottom: 6px; } }
 
 /* ---------- 라이트박스 ---------- */
@@ -515,6 +517,10 @@ html.water-nav::view-transition-new(root) {
 html.water-nav::view-transition-group(root) { animation-duration: 1.9s; }
 /* 페이지 전환을 지원하지 않는 브라우저 */
 html.page-fade body { animation: pageFade .7s ease both; }
+/* 물결 전환 뒤 실제 이동: 이전 화면(이미 새 페이지 모습)을 잠깐 덮어 두었다가 살며시 걷어냄 → 다시 로딩되는 느낌 없음 */
+html.seamless::view-transition-new(root) { animation: none; }
+html.seamless::view-transition-old(root) { animation: seamOut .45s ease .15s both; }
+@keyframes seamOut { to { opacity: 0; } }
 @keyframes pageFade { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
   html.water-nav::view-transition-new(root) { animation: none; -webkit-mask-image: none; mask-image: none; }
@@ -554,6 +560,7 @@ html.is-leaving .flow__label { opacity: .7; }   /* 불러오는 동안 살짝 �
   transition: opacity 1.4s ease, transform 6s ease-out;
 }
 .gx__img.is-on { opacity: 1; transform: scale(1); }
+html.seamless .gx__img { transition: none; transform: none; }
 .gx__shade { position: absolute; inset: auto 0 0 0; height: 45%; pointer-events: none;
   background: linear-gradient(transparent, rgba(0,0,0,.42)); }
 .gx__meta { position: absolute; left: clamp(18px, 2.4vw, 34px); bottom: clamp(16px, 2.2vw, 30px); transition: opacity .26s ease, transform .26s ease; }

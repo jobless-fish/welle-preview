@@ -12,12 +12,13 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdn-optimized.imweb.me">
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&family=Noto+Serif+KR:wght@400;500&family=Domine:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/style.css?v=207e3bde">
+<link rel="stylesheet" href="assets/css/style.css?v=10ad05e8">
 <script>
 /* 이전 페이지에서 data-water 링크로 왔으면: 누른 위치를 전환 효과에 넘김 */
 try{var w=sessionStorage.getItem('welleWater');if(w){sessionStorage.removeItem('welleWater');w=JSON.parse(w);var r=document.documentElement;
 r.style.setProperty('--wx',(w.x*100).toFixed(1)+'%');r.style.setProperty('--wy',((1-w.y)*100).toFixed(1)+'%');
-r.classList.add(('onpagereveal' in window)?'water-nav':'page-fade');setTimeout(function(){r.classList.remove('water-nav','page-fade')},2000);}}catch(e){}
+r.classList.add(('onpagereveal' in window)?'water-nav':'page-fade');setTimeout(function(){r.classList.remove('water-nav','page-fade')},2000);}
+if(sessionStorage.getItem('welleSeamless')){sessionStorage.removeItem('welleSeamless');document.documentElement.classList.add('seamless');setTimeout(function(){document.documentElement.classList.remove('seamless')},1500);}}catch(e){}
 </script>
 
 </head>
@@ -38,7 +39,7 @@ r.classList.add(('onpagereveal' in window)?'water-nav':'page-fade');setTimeout(f
     <a href="gallery.html">All</a>
     <a href="album-11.html">아벤티움 ›</a>
   </div>
-  <div class="masonry"><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/46e89e89f71cf.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/46e89e89f71cf.jpg?w=640" alt="데이트스냅 1" loading="lazy"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/50e712ac1fcea.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/50e712ac1fcea.jpg?w=640" alt="데이트스냅 2" loading="lazy"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/76f98488f231f.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/76f98488f231f.jpg?w=640" alt="데이트스냅 3" loading="lazy"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/4b57feddaa8c7.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/4b57feddaa8c7.jpg?w=640" alt="데이트스냅 4" loading="lazy"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/03cf715b61a9c.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/03cf715b61a9c.jpg?w=640" alt="데이트스냅 5" loading="lazy"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/5735d69dd3e63.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/5735d69dd3e63.jpg?w=640" alt="데이트스냅 6" loading="lazy"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/a3db8d83ee3ad.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/a3db8d83ee3ad.jpg?w=640" alt="데이트스냅 7" loading="lazy"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/afd0dd15719c7.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/afd0dd15719c7.jpg?w=640" alt="데이트스냅 8" loading="lazy"></a></div>
+  <div class="masonry"><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/46e89e89f71cf.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/46e89e89f71cf.jpg?w=640" alt="데이트스냅 1" fetchpriority="high"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/50e712ac1fcea.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/50e712ac1fcea.jpg?w=640" alt="데이트스냅 2" fetchpriority="high"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/76f98488f231f.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/76f98488f231f.jpg?w=640" alt="데이트스냅 3" fetchpriority="high"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/4b57feddaa8c7.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/4b57feddaa8c7.jpg?w=640" alt="데이트스냅 4" fetchpriority="high"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/03cf715b61a9c.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/03cf715b61a9c.jpg?w=640" alt="데이트스냅 5"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/5735d69dd3e63.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/5735d69dd3e63.jpg?w=640" alt="데이트스냅 6"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/a3db8d83ee3ad.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/a3db8d83ee3ad.jpg?w=640" alt="데이트스냅 7"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/afd0dd15719c7.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/afd0dd15719c7.jpg?w=640" alt="데이트스냅 8"></a></div>
 </div>
 </main>
 <footer class="site-footer">
@@ -50,7 +51,7 @@ r.classList.add(('onpagereveal' in window)?'water-nav':'page-fade');setTimeout(f
   <div class="copy">© 2021 Welle Fotografien All Rights Reserved.</div>
 </footer>
 <div class="toast" role="status" aria-live="polite"></div>
-<script src="assets/js/site.js?v=a8381641"></script>
+<script src="assets/js/site.js?v=07626055"></script>
 
 </body>
 </html>

@@ -18,7 +18,11 @@
     fr.src = href;
     document.body.appendChild(fr);
     document.documentElement.classList.add('is-leaving');
-    function leave() { window.location.href = href; }
+    function leave() {
+      // 물결로 이미 새 페이지를 보여줬으니, 실제로 넘어갈 때는 다시 나타나는 효과 없이 그대로 이어지게
+      try { if (done) sessionStorage.setItem('welleSeamless', '1'); } catch (err) {}
+      window.location.href = href;
+    }
     function reveal() {
       if (done) return; done = true;
       requestAnimationFrame(function () {
@@ -29,7 +33,7 @@
     // 사진까지 다 불러오면 'load' — 그때 드러냄
     fr.addEventListener('load', function () { setTimeout(reveal, 60); });
     // 너무 오래 걸리면 효과 없이 바로 이동
-    setTimeout(function () { if (!done) { done = true; leave(); } }, 5000);
+    setTimeout(function () { if (!done) { done = true; window.location.href = href; } }, 5000);
   });
   // 뒤로가기로 돌아왔을 때 남아 있는 덮개 정리
   window.addEventListener('pageshow', function (e) {

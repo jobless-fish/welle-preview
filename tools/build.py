@@ -88,7 +88,8 @@ def page(title, active, body, extra_head="", extra_body="", body_class=""):
 /* 이전 페이지에서 data-water 링크로 왔으면: 누른 위치를 전환 효과에 넘김 */
 try{{var w=sessionStorage.getItem('welleWater');if(w){{sessionStorage.removeItem('welleWater');w=JSON.parse(w);var r=document.documentElement;
 r.style.setProperty('--wx',(w.x*100).toFixed(1)+'%');r.style.setProperty('--wy',((1-w.y)*100).toFixed(1)+'%');
-r.classList.add(('onpagereveal' in window)?'water-nav':'page-fade');setTimeout(function(){{r.classList.remove('water-nav','page-fade')}},2000);}}}}catch(e){{}}
+r.classList.add(('onpagereveal' in window)?'water-nav':'page-fade');setTimeout(function(){{r.classList.remove('water-nav','page-fade')}},2000);}}
+if(sessionStorage.getItem('welleSeamless')){{sessionStorage.removeItem('welleSeamless');document.documentElement.classList.add('seamless');setTimeout(function(){{document.documentElement.classList.remove('seamless')}},1500);}}}}catch(e){{}}
 </script>
 {extra_head}
 </head>
@@ -199,7 +200,7 @@ for i, a in enumerate(albums):
     prev_a = albums[i - 1]
     next_a = albums[(i + 1) % len(albums)]
     photos = "".join(
-        f'<a href="{up(f, 1600)}" data-lightbox><img src="{up(f, 640)}" alt="{html.escape(a["title"])} {n + 1}" loading="lazy"></a>'
+        f'<a href="{up(f, 1600)}" data-lightbox><img src="{up(f, 640)}" alt="{html.escape(a["title"])} {n + 1}"{' loading="lazy"' if n >= 12 else ' fetchpriority="high"' if n < 4 else ''}></a>'
         for n, f in enumerate(a["photos"]))
     write(f"album-{a['id']}.html", page(a["title"], "Gallery", f"""
 <div class="container">

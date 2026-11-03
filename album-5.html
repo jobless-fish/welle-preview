@@ -12,12 +12,13 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdn-optimized.imweb.me">
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&family=Noto+Serif+KR:wght@400;500&family=Domine:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/style.css?v=207e3bde">
+<link rel="stylesheet" href="assets/css/style.css?v=10ad05e8">
 <script>
 /* 이전 페이지에서 data-water 링크로 왔으면: 누른 위치를 전환 효과에 넘김 */
 try{var w=sessionStorage.getItem('welleWater');if(w){sessionStorage.removeItem('welleWater');w=JSON.parse(w);var r=document.documentElement;
 r.style.setProperty('--wx',(w.x*100).toFixed(1)+'%');r.style.setProperty('--wy',((1-w.y)*100).toFixed(1)+'%');
-r.classList.add(('onpagereveal' in window)?'water-nav':'page-fade');setTimeout(function(){r.classList.remove('water-nav','page-fade')},2000);}}catch(e){}
+r.classList.add(('onpagereveal' in window)?'water-nav':'page-fade');setTimeout(function(){r.classList.remove('water-nav','page-fade')},2000);}
+if(sessionStorage.getItem('welleSeamless')){sessionStorage.removeItem('welleSeamless');document.documentElement.classList.add('seamless');setTimeout(function(){document.documentElement.classList.remove('seamless')},1500);}}catch(e){}
 </script>
 
 </head>
@@ -38,7 +39,7 @@ r.classList.add(('onpagereveal' in window)?'water-nav':'page-fade');setTimeout(f
     <a href="gallery.html">All</a>
     <a href="album-3.html">야외촬영 ›</a>
   </div>
-  <div class="masonry"><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/72d5e4ffc12f6.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/72d5e4ffc12f6.jpg?w=640" alt="스튜디오 1" loading="lazy"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/70fb21a44569d.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/70fb21a44569d.jpg?w=640" alt="스튜디오 2" loading="lazy"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/b85aa5359c199.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/b85aa5359c199.jpg?w=640" alt="스튜디오 3" loading="lazy"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/8388689710f68.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/8388689710f68.jpg?w=640" alt="스튜디오 4" loading="lazy"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/75bc0e26cfc78.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/75bc0e26cfc78.jpg?w=640" alt="스튜디오 5" loading="lazy"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/dbd647cafc032.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/dbd647cafc032.jpg?w=640" alt="스튜디오 6" loading="lazy"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/4b9bfa3db40ca.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/4b9bfa3db40ca.jpg?w=640" alt="스튜디오 7" loading="lazy"></a></div>
+  <div class="masonry"><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/72d5e4ffc12f6.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/72d5e4ffc12f6.jpg?w=640" alt="스튜디오 1" fetchpriority="high"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/70fb21a44569d.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/70fb21a44569d.jpg?w=640" alt="스튜디오 2" fetchpriority="high"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/b85aa5359c199.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/b85aa5359c199.jpg?w=640" alt="스튜디오 3" fetchpriority="high"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/8388689710f68.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/8388689710f68.jpg?w=640" alt="스튜디오 4" fetchpriority="high"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/75bc0e26cfc78.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/75bc0e26cfc78.jpg?w=640" alt="스튜디오 5"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/dbd647cafc032.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/dbd647cafc032.jpg?w=640" alt="스튜디오 6"></a><a href="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/4b9bfa3db40ca.jpg?w=1600" data-lightbox><img src="https://cdn-optimized.imweb.me/upload/S202210286ca7615864d67/4b9bfa3db40ca.jpg?w=640" alt="스튜디오 7"></a></div>
 </div>
 </main>
 <footer class="site-footer">
@@ -50,7 +51,7 @@ r.classList.add(('onpagereveal' in window)?'water-nav':'page-fade');setTimeout(f
   <div class="copy">© 2021 Welle Fotografien All Rights Reserved.</div>
 </footer>
 <div class="toast" role="status" aria-live="polite"></div>
-<script src="assets/js/site.js?v=a8381641"></script>
+<script src="assets/js/site.js?v=07626055"></script>
 
 </body>
 </html>
