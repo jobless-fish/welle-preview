@@ -449,6 +449,15 @@ html.no-scroll, html.no-scroll body { overflow: hidden; height: 100%; }
 .has-dock.js-hero { min-height: 0; }
 /* 카드가 내려가 있을 땐 'Gallery' 블러가 뜨지 않게 */
 .has-dock .flow:not(.is-up) .flow__hover { opacity: 0 !important; pointer-events: none; }
+html.no-scroll, html.no-scroll body { overscroll-behavior: none; }
+/* 모바일: 카드 크기를 화면 폭에 맞춤, 'Gallery' 글자는 카드가 올라왔을 때만 */
+@media (max-width: 760px) {
+  .has-dock .flow__row { gap: 10px; padding-right: 10px; }
+  .has-dock .flow__row img { height: clamp(104px, 29vw, 150px); }
+  .has-dock .flow { padding-bottom: clamp(18px, 4vh, 36px); }
+  .has-dock .flow__cta, .has-dock .flow__stage::after { transition: opacity .45s ease; }
+  .has-dock .flow:not(.is-up) .flow__cta, .has-dock .flow:not(.is-up) .flow__stage::after { opacity: 0; pointer-events: none; }
+}
 
 /* 홈 아래: 갤러리 사진이 천천히 옆으로 흐르는 띠 */
 .flow { position: relative; padding: clamp(28px, 4vw, 48px) 0 clamp(56px, 8vw, 88px); overflow: hidden; }

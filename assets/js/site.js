@@ -292,7 +292,7 @@
     // PC: 스크롤하면 사진 위로 포토카드들이 아래에서 회전하며 올라옴
     //     카드들은 수평선을 바라볼 때처럼 살짝 휜 곡선(가운데가 높고 양끝이 낮은) 위에 놓임
     var flowEl = document.querySelector('.flow');
-    var dock = !lite && !reduce && !!flowEl;
+    var dock = !reduce && !!flowEl;   // PC·모바일 모두 (모바일은 화면 비율에 맞춘 크기)
     if (dock) {
       // PC 홈은 스크롤 없는 한 화면 — 카드만 마우스·휠에 반응
       body.classList.add('has-dock');
@@ -315,7 +315,7 @@
         // 모바일: 사진이 화면 대부분을 채우도록 (아래에 흐르는 사진이 살짝 보이게)
         // 주소창이 숨었다 나타날 때 높이가 출렁이지 않도록 폭이 바뀔 때만 다시 계산
         if (w !== mobW || !mobH) { mobW = w; mobH = window.innerHeight; }
-        h = Math.max(h, mobH - H - 96);
+        h = dock ? mobH - H : Math.max(h, mobH - H - 96);
       }
       root.style.setProperty('--hero-h', Math.round(h) + 'px');
       // 전환 거리: 기본은 헤더 높이 × 2, 페이지가 짧으면 그만큼 줄여서 아래에 빈 여백이 생기지 않게
@@ -442,7 +442,7 @@
       }
       var m = new DOMMatrixReadOnly(getComputedStyle(flowTrack).transform);
       var sx = flowStage.getBoundingClientRect().left + m.m41;
-      var C = Math.min(70, W * 0.032);                          // 곡선 깊이 (양끝이 이만큼 낮아짐)
+      var C = Math.min(70, W * (W < 761 ? 0.05 : 0.032));                          // 곡선 깊이 (양끝이 이만큼 낮아짐)
       for (var i = 0; i < cardInfo.length; i++) {
         var c = cardInfo[i], a = c.el;
         if (c.w == null) { c.x = a.offsetLeft; c.w = a.offsetWidth; }   // offsetLeft는 이미 띠 기준 위치
@@ -477,6 +477,15 @@
         if (Math.abs(ev.deltaY) < 2) return;
         lockTo(ev.deltaY > 0);
       }, { passive: true });
+      // 터치: 위로 쓸어올리면 올라와서 고정, 아래로 쓸어내리면 내려감
+      var ty = null, tx0 = null;
+      document.addEventListener('touchstart', function (ev) { ty = ev.touches[0].clientY; tx0 = ev.touches[0].clientX; }, { passive: true });
+      document.addEventListener('touchmove', function (ev) {
+        if (ty === null) return;
+        var dy = ty - ev.touches[0].clientY, dx = ev.touches[0].clientX - tx0;
+        if (Math.abs(dy) > 28 && Math.abs(dy) > Math.abs(dx)) { lockTo(dy > 0); ty = null; }
+      }, { passive: true });
+      document.addEventListener('touchend', function () { ty = null; }, { passive: true });
       window.addEventListener('keydown', function (ev) {
         if (/^(ArrowDown|PageDown|End| )$/.test(ev.key)) lockTo(true);
         else if (/^(ArrowUp|PageUp|Home)$/.test(ev.key)) lockTo(false);
