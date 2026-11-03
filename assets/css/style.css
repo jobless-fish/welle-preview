@@ -443,6 +443,11 @@ details.privacy .terms { border: 0; border-top: 1px solid var(--line); height: 2
 .has-dock .flow__row { gap: 16px; padding-right: 16px; }
 .has-dock .flow__row img { height: clamp(120px, 10vw, 190px); }   /* 사진 위에 얹히는 작은 포토카드 크기 */
 .has-dock .hero__fade { display: none; }
+/* 스크롤 없는 한 화면 */
+html.no-scroll, html.no-scroll body { overflow: hidden; height: 100%; }
+.has-dock.js-hero { min-height: 0; }
+/* 카드가 내려가 있을 땐 'Gallery' 블러가 뜨지 않게 */
+.has-dock .flow:not(.is-up) .flow__hover { opacity: 0 !important; pointer-events: none; }
 
 /* 홈 아래: 갤러리 사진이 천천히 옆으로 흐르는 띠 */
 .flow { position: relative; padding: clamp(28px, 4vw, 48px) 0 clamp(56px, 8vw, 88px); overflow: hidden; }

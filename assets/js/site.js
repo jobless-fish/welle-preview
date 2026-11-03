@@ -293,7 +293,13 @@
     //     카드들은 수평선을 바라볼 때처럼 살짝 휜 곡선(가운데가 높고 양끝이 낮은) 위에 놓임
     var flowEl = document.querySelector('.flow');
     var dock = !lite && !reduce && !!flowEl;
-    if (dock) body.classList.add('has-dock');
+    if (dock) {
+      // PC 홈은 스크롤 없는 한 화면 — 카드만 마우스·휠에 반응
+      body.classList.add('has-dock');
+      root.classList.add('no-scroll');
+      if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+      window.scrollTo(0, 0);
+    }
     var mobH = 0, mobW = 0;
     var sizedW = 0;
     function sizeHero(force) {
@@ -303,8 +309,8 @@
       sizedW = w;
       if (window.innerWidth > 760) {
         h = Math.min(h, window.innerHeight - H + 40);
-        // 카드가 사진 위로 올라오므로, 전환이 끝났을 때 사진이 헤더 아래 화면을 꽉 채우도록 길게
-        if (dock) h = window.innerHeight + H + 2;
+        // 스크롤 없는 한 화면: 사진이 헤더 뒤까지 화면 전체를 채움
+        if (dock) h = window.innerHeight - H;
       } else {
         // 모바일: 사진이 화면 대부분을 채우도록 (아래에 흐르는 사진이 살짝 보이게)
         // 주소창이 숨었다 나타날 때 높이가 출렁이지 않도록 폭이 바뀔 때만 다시 계산
@@ -314,7 +320,7 @@
       root.style.setProperty('--hero-h', Math.round(h) + 'px');
       // 전환 거리: 기본은 헤더 높이 × 2, 페이지가 짧으면 그만큼 줄여서 아래에 빈 여백이 생기지 않게
       SPAN = 2;
-      if (mainEl) {
+      if (mainEl && !dock) {
         var natural = mainEl.getBoundingClientRect().bottom + window.scrollY;
         var room = natural - window.innerHeight;
         SPAN = Math.max(1.1, Math.min(2, room / H));
@@ -345,12 +351,6 @@
       var topScreen = Math.max(base, 0);
       // 카드가 올라온 정도 (0 = 아래에 숨음, 1 = 다 올라옴)
       var cover = 0;
-      if (dock) {
-        // 띠 자리가 화면 아래로 들어오기 시작할 때부터, 다 들어올 때까지 → 회전·올라옴이 화면 안에서 보이게
-        var fr = flowEl.getBoundingClientRect(), fh = flowEl.offsetHeight || 1;
-        dockQ = Math.max(0, Math.min(1, (window.innerHeight - fr.top) / (fh * 0.95)));
-        startDock();
-      }
       var botScreen = Math.min(hrect.bottom, window.innerHeight) - cover;
       if (botScreen - topScreen < 60) topScreen = Math.max(hrect.top, botScreen - 60);
       // 1px 단위로만 바꿔서 같은 값으로 사진을 다시 그리는 일을 줄임
@@ -407,7 +407,7 @@
       var hr = hero.getBoundingClientRect(), vh = window.innerHeight;
       var visTop = Math.max(hr.top, 0);            // 로고·메뉴 아래부터 (메뉴와 겹치지 않게)
       var visBot = Math.min(hr.bottom, vh);
-      if (info) info.style.bottom = (dock ? flowEl.offsetHeight + 6 : Math.max(window.innerWidth < 761 ? 22 : 30, hr.bottom - vh + 30)) + 'px';
+      if (info && !dock) info.style.bottom = (Math.max(window.innerWidth < 761 ? 22 : 30, hr.bottom - vh + 30)) + 'px';
       if (info) visBot = Math.min(visBot, info.getBoundingClientRect().top - 8);   // 하단 정보와 겹치지 않게
       if (dotsWrap) dotsWrap.style.top = ((visTop + visBot) / 2 - hr.top) + 'px';
       body.classList.toggle('is-top', p < 0.02);
@@ -415,7 +415,8 @@
     function schedule() { if (!ticking) { ticking = true; requestAnimationFrame(render); } }
 
     // ---- 포토카드: 매 프레임 각 카드의 화면 위치에 따라 곡선·기울기·올라옴을 계산 ----
-    var dockQ = 0, dockOn = false;
+    var dockQ = 0, dockOn = false, dockLocked = false, dockHover = false;
+    function dockTarget() { return (dockLocked || dockHover) ? 1 : 0; }
     var cards = dock ? [].slice.call(flowEl.querySelectorAll('.flow__row a')) : [];
     var flowTrack = dock ? flowEl.querySelector('.flow__track') : null;
     var flowStage = dock ? flowEl.querySelector('.flow__stage') : null;
@@ -427,8 +428,14 @@
     function startDock() { if (!dockOn) { dockOn = true; requestAnimationFrame(dockFrame); } }
     function dockFrame() {
       var W = window.innerWidth, half = W / 2;
-      var hb = hero.getBoundingClientRect().bottom;
-      if (dockQ <= 0 || hb < -50 || document.hidden) {        // 안 보일 때는 쉬기
+      // 목표(올라옴 1 / 내려감 0)를 향해 부드럽게 움직임
+      var tg = dockTarget();
+      dockQ += (tg - dockQ) * (tg > dockQ ? 0.075 : 0.09);
+      if (Math.abs(tg - dockQ) < 0.002) dockQ = tg;
+      flowEl.classList.toggle('is-up', dockQ > 0.85);
+      if (info) info.style.bottom = (30 + (flowEl.offsetHeight - 24) * dockQ).toFixed(1) + 'px';   // 정보는 카드 위로 비켜 줌
+      if (dotsWrap && info) dotsWrap.style.top = ((Math.max(0, hero.getBoundingClientRect().top) + info.getBoundingClientRect().top - 8) / 2 - hero.getBoundingClientRect().top) + 'px';
+      if ((dockQ <= 0 && tg === 0) || document.hidden) {        // 다 내려갔으면 쉬기
         dockOn = false;
         if (dockQ <= 0) cardInfo.forEach(function (c) { c.el.style.opacity = '0'; });
         return;
@@ -457,6 +464,23 @@
     if (dock) {
       window.addEventListener('resize', function () { cardInfo.forEach(function (c) { c.w = null; }); });
       document.addEventListener('visibilitychange', function () { if (!document.hidden && dockQ > 0) startDock(); });
+      // 마우스: 화면 아래쪽 구역에 들어오면 올라오고, 나가면 내려감
+      document.addEventListener('mousemove', function (ev) {
+        var zone = flowEl.offsetHeight + 70;
+        var inZone = ev.clientY > window.innerHeight - zone;
+        if (inZone !== dockHover) { dockHover = inZone; startDock(); }
+      }, { passive: true });
+      document.documentElement.addEventListener('mouseleave', function () { if (dockHover) { dockHover = false; startDock(); } });
+      // 휠·키보드: 아래로 → 올라와서 고정, 위로 → 내려감
+      function lockTo(v) { if (window.__inkIntroActive) return; if (dockLocked !== v) { dockLocked = v; startDock(); } }
+      window.addEventListener('wheel', function (ev) {
+        if (Math.abs(ev.deltaY) < 2) return;
+        lockTo(ev.deltaY > 0);
+      }, { passive: true });
+      window.addEventListener('keydown', function (ev) {
+        if (/^(ArrowDown|PageDown|End| )$/.test(ev.key)) lockTo(true);
+        else if (/^(ArrowUp|PageUp|Home)$/.test(ev.key)) lockTo(false);
+      });
     }
 
     window.addEventListener('scroll', schedule, { passive: true });
