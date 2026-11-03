@@ -471,7 +471,7 @@
     function schedule() { if (!ticking) { ticking = true; requestAnimationFrame(render); } }
 
     // ---- 포토카드: 매 프레임 각 카드의 화면 위치에 따라 곡선·기울기·올라옴을 계산 ----
-    var dockQ = 0, dockOn = false, dockLocked = false, dockHover = false;
+    var dockT = 0, dockQ = 0, dockOn = false, dockLocked = false, dockHover = false;
     function dockTarget() { return (dockLocked || dockHover) ? 1 : 0; }
     var cards = dock ? [].slice.call(flowEl.querySelectorAll('.flow__row a')) : [];
     var flowTrack = dock ? flowEl.querySelector('.flow__track') : null;
@@ -494,13 +494,13 @@
     function dockFrame() {
       var W = window.innerWidth, half = W / 2;
       // 목표(올라옴 1 / 내려감 0)를 향해 부드럽게 움직임
-      var tg = dockTarget();
-      dockQ += (tg - dockQ) * (tg > dockQ ? 0.075 : 0.09);
+      var tg = dockTarget(), nowT = performance.now(), dt = Math.min(0.1, (nowT - (dockT || nowT)) / 1000); dockT = nowT;
+      dockQ += (tg - dockQ) * (1 - Math.exp(-dt / (tg > dockQ ? 0.21 : 0.18)));   // 시간 기준 (기기 성능과 무관하게 같은 속도)
       if (Math.abs(tg - dockQ) < 0.002) dockQ = tg;
       flowEl.classList.toggle('is-up', dockQ > 0.85);
       placeInfo();
       if ((dockQ <= 0 && tg === 0) || document.hidden) {        // 다 내려갔으면 쉬기
-        dockOn = false;
+        dockOn = false; dockT = 0;
         if (dockQ <= 0) cardInfo.forEach(function (c) { c.el.style.opacity = '0'; });
         return;
       }
