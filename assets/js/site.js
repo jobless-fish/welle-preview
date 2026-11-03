@@ -201,11 +201,36 @@
       load(slides[(cur + 1) % slides.length].querySelector('img'));   // 다음 장 미리
       paintCanvas();
     }
-    // 한 화면 모드: 페이지 바깥(폰 도구막대·홈 표시줄 아래)도 지금 사진으로 칠해 흰 줄이 보이지 않게
+    // 한 화면 모드: 폰 도구막대·홈 표시줄 아래(페이지 바깥)는 브라우저가 페이지 배경색으로 칠함
+    // → 지금 사진의 아래쪽 평균 색을 배경색으로 써서 흰 띠 없이 사진과 이어지게
+    var bottomColor = {};
+    function applyCanvas(col) {
+      var r = document.documentElement;
+      r.style.backgroundColor = col;
+      var m = document.querySelector('meta[name="theme-color"]');
+      if (!m) { m = document.createElement('meta'); m.name = 'theme-color'; document.head.appendChild(m); }
+      m.content = col;
+    }
     function paintCanvas() {
       if (!document.documentElement.classList.contains('no-scroll')) return;
-      var im = slides[cur].querySelector('img'), src = im && (im.currentSrc || im.getAttribute('src') || im.getAttribute('data-src'));
-      if (src) document.documentElement.style.background = '#111 url("' + src + '") center bottom / cover no-repeat';
+      var im = slides[cur].querySelector('img'), src = im && (im.getAttribute('src') || im.getAttribute('data-src'));
+      if (!src) return;
+      if (bottomColor[src]) { applyCanvas(bottomColor[src]); return; }
+      var t = new Image();
+      t.crossOrigin = 'anonymous';
+      t.onload = function () {
+        try {
+          var c = document.createElement('canvas'); c.width = 16; c.height = 4;
+          var x = c.getContext('2d');
+          x.drawImage(t, 0, t.naturalHeight * 0.88, t.naturalWidth, t.naturalHeight * 0.12, 0, 0, 16, 4);
+          var d = x.getImageData(0, 0, 16, 4).data, R = 0, G = 0, B = 0, n = d.length / 4;
+          for (var k = 0; k < d.length; k += 4) { R += d[k]; G += d[k + 1]; B += d[k + 2]; }
+          bottomColor[src] = 'rgb(' + Math.round(R / n) + ',' + Math.round(G / n) + ',' + Math.round(B / n) + ')';
+          var now = slides[cur].querySelector('img');
+          if (now && (now.getAttribute('src') || now.getAttribute('data-src')) === src) applyCanvas(bottomColor[src]);
+        } catch (err) {}
+      };
+      t.src = src;
     }
     window.__wellePaintCanvas = function () { paintCanvas(); };
     function restart() {
