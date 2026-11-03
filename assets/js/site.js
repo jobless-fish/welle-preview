@@ -776,6 +776,31 @@
       });
     });
 
+    // 오른쪽 앨범이 8개를 넘으면: 화살표·옆으로 밀기로 다음 장
+    var pages = gx.querySelector('.gx__pages');
+    var nPages = pages ? +pages.getAttribute('data-count') : 1, page = 0;
+    var navPrev = gx.querySelector('.gx__nav--prev'), navNext = gx.querySelector('.gx__nav--next'), pager = gx.querySelector('.gx__pager b');
+    function goPage(n) {
+      page = Math.max(0, Math.min(nPages - 1, n));
+      pages.style.setProperty('--page', page);
+      [].forEach.call(pages.children, function (g, i) { if (i === page) g.removeAttribute('aria-hidden'); else g.setAttribute('aria-hidden', 'true'); });
+      if (navPrev) navPrev.disabled = page === 0;
+      if (navNext) navNext.disabled = page === nPages - 1;
+      if (pager) pager.textContent = page + 1;
+    }
+    if (nPages > 1) {
+      navPrev.addEventListener('click', function () { goPage(page - 1); });
+      navNext.addEventListener('click', function () { goPage(page + 1); });
+      var sx0 = null, sy0 = null;
+      pages.addEventListener('touchstart', function (e) { sx0 = e.touches[0].clientX; sy0 = e.touches[0].clientY; }, { passive: true });
+      pages.addEventListener('touchend', function (e) {
+        if (sx0 === null) return;
+        var dx = e.changedTouches[0].clientX - sx0, dy = e.changedTouches[0].clientY - sy0;
+        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) goPage(page + (dx < 0 ? 1 : -1));
+        sx0 = null;
+      });
+    }
+
     showPhoto(byId[featured].photos[0], true);
     play();
     document.addEventListener('visibilitychange', function () { if (document.hidden) clearInterval(timer); else play(); });

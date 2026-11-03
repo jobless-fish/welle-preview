@@ -184,11 +184,22 @@ write("index.html", page("", "Home", home_body, extra_body=intro, body_class="ho
 # ---------- Gallery ----------
 # 왼쪽 큰 칸 = 첫 앨범(아벤티움), 오른쪽 8칸 = 나머지 (누르면 큰 칸과 자리 바꿈)
 first, rest = albums[0], albums[1:]
-gx_tiles = "".join(f"""
-    <button class="gx__tile" type="button" data-id="{a['id']}" aria-label="{html.escape(a['title'])} — 크게 보기">
-      <img src="{up(a['cover'], 560)}" alt="" decoding="async">
-      <span class="gx__tmeta"><span class="gx__tname">{html.escape(a['title'])}</span><span class="gx__tcount">{len(a['photos'])}</span></span>
-    </button>""" for a in rest)
+GX_PER = 8   # 오른쪽 한 화면에 들어가는 앨범 수 (PC 2×4, 모바일 4×2) — 넘치면 다음 장으로 넘김
+def gx_tile(a):
+    return f"""
+      <button class="gx__tile" type="button" data-id="{a['id']}" aria-label="{html.escape(a['title'])} — 크게 보기">
+        <img src="{up(a['cover'], 560)}" alt="" decoding="async">
+        <span class="gx__tmeta"><span class="gx__tname">{html.escape(a['title'])}</span><span class="gx__tcount">{len(a['photos'])}</span></span>
+      </button>"""
+gx_pages = [rest[i:i + GX_PER] for i in range(0, len(rest), GX_PER)] or [[]]
+gx_grids = "".join(f"""
+    <div class="gx__grid" data-page="{n}"{' aria-hidden="true"' if n else ''}>{"".join(gx_tile(a) for a in pg)}
+    </div>""" for n, pg in enumerate(gx_pages))
+CHEV = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+gx_nav = "" if len(gx_pages) < 2 else f"""
+  <button class="gx__nav gx__nav--prev" type="button" aria-label="이전 앨범들" disabled>{CHEV}</button>
+  <button class="gx__nav gx__nav--next" type="button" aria-label="다음 앨범들">{CHEV}</button>
+  <div class="gx__pager" aria-hidden="true"><b>1</b> / {len(gx_pages)}</div>"""
 gx_data = json.dumps({"up": UP, "albums": [{"id": a["id"], "title": a["title"], "cover": a["cover"], "photos": a["photos"]} for a in albums]}, ensure_ascii=False)
 write("gallery.html", page("Gallery", "Gallery", f"""
 <h1 class="sr-only">Gallery</h1>
@@ -198,7 +209,9 @@ write("gallery.html", page("Gallery", "Gallery", f"""
     <div class="gx__shade" aria-hidden="true"></div>
     <div class="gx__meta"><span class="gx__title">{html.escape(first['title'])}</span><span class="gx__count">{len(first['photos'])} photos</span><span class="gx__go">View detail<i aria-hidden="true"></i></span></div>
   </a>
-  <div class="gx__grid" style="--rows:{max(1, (len(rest) + 1) // 2)}">{gx_tiles}
+  <div class="gx__side">
+    <div class="gx__view"><div class="gx__pages" data-count="{len(gx_pages)}">{gx_grids}
+    </div></div>{gx_nav}
   </div>
 </section>
 <script>window.__GX__ = {gx_data};</script>""", body_class="compact"))

@@ -629,7 +629,32 @@ html.seamless .gx__img { transition: none; transform: none; }
 }
 
 /* 오른쪽 8칸 */
-.gx__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(var(--rows, 4), minmax(0, 1fr)); gap: 12px; }   /* 앨범 수에 맞춰 줄 수가 바뀜 */
+.gx__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(4, minmax(0, 1fr)); gap: 12px; }
+/* 오른쪽 칸: 8개씩 한 장, 넘치면 화살표로 옆으로 넘김 */
+.gx__side { position: relative; min-width: 0; min-height: 0; }
+.gx__view { height: 100%; overflow: hidden; }
+.gx__pages { --page: 0; display: flex; gap: 12px; height: 100%;
+  transform: translateX(calc(var(--page) * (-100% - 12px))); transition: transform .75s cubic-bezier(.65, 0, .35, 1); }
+.gx__pages > .gx__grid { flex: 0 0 100%; min-width: 0; height: 100%; }
+.gx__nav {
+  position: absolute; top: 50%; z-index: 3; width: 52px; height: 52px; margin-top: -26px; padding: 0; border-radius: 50%;
+  display: grid; place-items: center; cursor: pointer; color: var(--ink);
+  background: rgba(255, 255, 255, .82); border: 1px solid rgba(255, 255, 255, .9);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  box-shadow: 0 6px 22px rgba(13, 27, 38, .18);
+  transition: opacity .35s ease, transform .35s ease, box-shadow .35s ease;
+}
+.gx__nav svg { width: 22px; height: 22px; }
+.gx__nav--next { right: -26px; }
+.gx__nav--prev { left: -26px; }
+.gx__nav--prev svg { transform: scaleX(-1); }
+.gx__nav:hover { transform: scale(1.06); box-shadow: 0 8px 28px rgba(13, 27, 38, .24); }
+.gx__nav[disabled] { opacity: 0; pointer-events: none; transform: scale(.85); }
+.gx__nav--next:not([disabled]) svg { animation: navNudge 2.6s ease-in-out infinite; }
+@keyframes navNudge { 0%, 70%, 100% { transform: none; } 85% { transform: translateX(3px); } }
+.gx__pager { position: absolute; right: 2px; bottom: -22px; font: 400 12px/1 var(--serif); letter-spacing: .14em; color: var(--muted); }
+.gx__pager b { font-weight: 400; color: var(--ink); }
+@media (prefers-reduced-motion: reduce) { .gx__pages { transition: none; } .gx__nav svg { animation: none !important; } }
 .gx__tile {
   position: relative; overflow: hidden; display: block; padding: 0; border: 0; cursor: pointer;
   background: var(--paper-2); color: #fff; text-align: left;
@@ -646,7 +671,13 @@ html.seamless .gx__img { transition: none; transform: none; }
 
 @media (max-width: 760px) {
   .gx { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; gap: 6px; padding: 0 10px; min-height: 0; margin-top: 4px; }
-  .gx__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: none; gap: 6px; }
+  .gx__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: none; gap: 6px; align-content: start; }
+  .gx__pages { gap: 6px; transform: translateX(calc(var(--page) * (-100% - 6px))); }
+  .gx__view { height: auto; }
+  .gx__nav { width: 38px; height: 38px; margin-top: -19px; }
+  .gx__nav svg { width: 18px; height: 18px; }
+  .gx__nav--next { right: -6px; } .gx__nav--prev { left: -6px; }
+  .gx__pager { position: static; text-align: right; margin-top: 6px; }
   .gx__tile { aspect-ratio: 1 / 1.05; }
   .gx__tmeta { left: 6px; right: 6px; bottom: 5px; }
   .gx__tname { font-size: 12px; }
