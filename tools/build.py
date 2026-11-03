@@ -46,11 +46,17 @@ def up(f, w):
     return f"{UP}{f}?w={w}"
 
 
-albums = {}
-for p in sorted((ROOT / "_data").glob("albums_part*.json")):
-    for a in json.loads(p.read_text(encoding="utf-8")):
-        albums[a["id"]] = a
-albums = [albums[i] for i in ORDER]
+# 아임웹 상품에서 자동으로 가져온 데이터(_data/albums.json, 순서 포함)가 있으면 그걸 쓰고,
+# 없으면 처음에 옮겨 둔 데이터(albums_part*.json + ORDER)를 씀
+SYNCED = ROOT / "_data" / "albums.json"
+if SYNCED.exists():
+    albums = json.loads(SYNCED.read_text(encoding="utf-8"))
+else:
+    albums = {}
+    for p in sorted((ROOT / "_data").glob("albums_part*.json")):
+        for a in json.loads(p.read_text(encoding="utf-8")):
+            albums[a["id"]] = a
+    albums = [albums[i] for i in ORDER]
 for a in albums:
     a["cover"] = a["imgs"][0]
     a["photos"] = a["imgs"][1:] or a["imgs"]
@@ -192,7 +198,7 @@ write("gallery.html", page("Gallery", "Gallery", f"""
     <div class="gx__shade" aria-hidden="true"></div>
     <div class="gx__meta"><span class="gx__title">{html.escape(first['title'])}</span><span class="gx__count">{len(first['photos'])} photos</span></div>
   </a>
-  <div class="gx__grid">{gx_tiles}
+  <div class="gx__grid" style="--rows:{max(1, (len(rest) + 1) // 2)}">{gx_tiles}
   </div>
 </section>
 <script>window.__GX__ = {gx_data};</script>""", body_class="compact"))
