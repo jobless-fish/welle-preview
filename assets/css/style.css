@@ -237,6 +237,7 @@ html.seamless .masonry img { transition: none; }
 }
 .lightbox.is-open { display: flex; }
 .lightbox img {
+  cursor: zoom-out;   /* 누르면 다시 작아짐 */
   max-width: min(92vw, 1400px); max-height: 86vh; width: auto; height: auto;
   box-shadow: 0 10px 40px rgba(0,0,0,.08);
 }

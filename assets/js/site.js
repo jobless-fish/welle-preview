@@ -810,7 +810,7 @@
     lb.querySelector('.lightbox__close').addEventListener('click', close);
     lb.querySelector('.lightbox__prev').addEventListener('click', function () { open(idx - 1); });
     lb.querySelector('.lightbox__next').addEventListener('click', function () { open(idx + 1); });
-    lb.addEventListener('click', function (e) { if (e.target === lb) close(); });
+    lb.addEventListener('click', function (e) { if (e.target === lb || e.target === lbImg) close(); });   // 사진이나 바깥을 누르면 닫힘
     document.addEventListener('keydown', function (e) {
       if (!lb.classList.contains('is-open')) return;
       if (e.key === 'Escape') close();
