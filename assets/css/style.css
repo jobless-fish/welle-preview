@@ -428,6 +428,20 @@ details.privacy .terms { border: 0; border-top: 1px solid var(--line); height: 2
 }
 @media (max-width: 760px) { .hero__fade { height: 34px; -webkit-backdrop-filter: none; backdrop-filter: none; } }
 
+/* PC: 갤러리 띠가 아래에서 볼록한 수평선처럼 솟아오름 (위치·볼록함은 스크립트가 스크롤에 맞춰 넣음) */
+.has-dock .flow {
+  margin-top: calc(-1 * var(--rise, 90px)); z-index: 3; background: #fff;
+  overflow: hidden; overflow: clip visible;            /* 옆으로는 자르고, 위로 솟은 곡선은 보이게 */
+  transform: translateY(var(--lift, 90px)); will-change: transform;
+}
+.has-dock .flow::before {                               /* 볼록거울 같은 윗변 */
+  content: ""; position: absolute; left: -12%; right: -12%; top: calc(-1 * var(--bulge, 36px) + 1px);
+  height: calc(var(--bulge, 36px) + 2px); background: #fff; pointer-events: none;
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  box-shadow: 0 -10px 30px -12px rgba(13, 27, 38, .18);
+}
+.has-dock .flow__stage { transform: scale(var(--mag, .965)); transform-origin: 50% 100%; }
+
 /* 홈 아래: 갤러리 사진이 천천히 옆으로 흐르는 띠 */
 .flow { position: relative; padding: clamp(28px, 4vw, 48px) 0 clamp(56px, 8vw, 88px); overflow: hidden; }
 .flow__track {

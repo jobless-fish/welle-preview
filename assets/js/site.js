@@ -289,6 +289,12 @@
 
     function headerFull() { return parseFloat(getComputedStyle(root).getPropertyValue('--header-h')) || 190; }
     var mainEl = document.querySelector('main');
+    // PC: 스크롤하면 갤러리 띠가 아래에서 볼록한 수평선처럼 살짝 솟아오름 (맥 Dock처럼)
+    var flowEl = document.querySelector('.flow');
+    var dock = !lite && !reduce && !!flowEl;
+    var RISE = 90;          // 올라오며 사진을 덮는 거리(px)
+    if (dock) body.classList.add('has-dock');
+    root.style.setProperty('--rise', RISE + 'px');
     var mobH = 0, mobW = 0;
     var sizedW = 0;
     function sizeHero(force) {
@@ -298,6 +304,7 @@
       sizedW = w;
       if (window.innerWidth > 760) {
         h = Math.min(h, window.innerHeight - H + 40);
+        if (dock) h += RISE;   // 갤러리 띠가 사진 아래를 덮으며 올라오는 만큼 사진을 길게
       } else {
         // 모바일: 사진이 화면 대부분을 채우도록 (아래에 흐르는 사진이 살짝 보이게)
         // 주소창이 숨었다 나타날 때 높이가 출렁이지 않도록 폭이 바뀔 때만 다시 계산
@@ -336,7 +343,20 @@
       // → 스크롤해도 사진이 인물 위치를 기준으로 다시 맞춰져 인물이 계속 보임
       var hrect = hero.getBoundingClientRect();
       var topScreen = Math.max(base, 0);
-      var botScreen = Math.min(hrect.bottom, window.innerHeight);
+      // 갤러리 띠가 올라온 정도 (0 = 아직 아래, 1 = 다 올라옴)
+      var q = 0, cover = 0;
+      if (dock) {
+        var flowTop0 = hrect.bottom - RISE;                       // 다 올라왔을 때 띠의 윗변 (화면 기준)
+        q = Math.min(1, Math.max(0, (window.innerHeight - flowTop0) / (window.innerHeight * 0.42)));
+        q = 1 - Math.pow(1 - q, 3);                               // 처음엔 빠르게, 끝에서 천천히 멈춤
+        var lift = RISE * (1 - q);
+        var bulge = 10 + 26 * (1 - q);                            // 볼록한 정도 — 올라오며 거의 수평선으로
+        flowEl.style.setProperty('--lift', lift.toFixed(1) + 'px');
+        flowEl.style.setProperty('--bulge', bulge.toFixed(1) + 'px');
+        flowEl.style.setProperty('--mag', (0.965 + 0.035 * q).toFixed(4));
+        cover = RISE - lift + bulge;                              // 사진 아래를 덮고 있는 높이
+      }
+      var botScreen = Math.min(hrect.bottom - cover, window.innerHeight);
       if (botScreen - topScreen < 60) topScreen = Math.max(hrect.top, botScreen - 60);
       // 1px 단위로만 바꿔서 같은 값으로 사진을 다시 그리는 일을 줄임
       var ext = Math.round(hrect.top - topScreen), exb = Math.round(Math.max(0, hrect.bottom - botScreen));
@@ -392,7 +412,7 @@
       var hr = hero.getBoundingClientRect(), vh = window.innerHeight;
       var visTop = Math.max(hr.top, 0);            // 로고·메뉴 아래부터 (메뉴와 겹치지 않게)
       var visBot = Math.min(hr.bottom, vh);
-      if (info) info.style.bottom = Math.max(window.innerWidth < 761 ? 22 : 30, hr.bottom - vh + 30) + 'px';
+      if (info) info.style.bottom = Math.max(window.innerWidth < 761 ? 22 : 30, hr.bottom - vh + 30, cover + 22) + 'px';
       if (info) visBot = Math.min(visBot, info.getBoundingClientRect().top - 8);   // 하단 정보와 겹치지 않게
       if (dotsWrap) dotsWrap.style.top = ((visTop + visBot) / 2 - hr.top) + 'px';
       body.classList.toggle('is-top', p < 0.02);
