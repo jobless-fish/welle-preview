@@ -1,0 +1,12 @@
+/* 아임웹 기본 화면 숨기기: 우리 화면이 들어간 페이지에서만 */
+body:has(#welle-root) #doz_header_wrap, body:has(#welle-root) #doz_footer_wrap,
+html.welle-mount #doz_header_wrap, html.welle-mount #doz_footer_wrap,
+html.welle-mount body > .section_wrap, html.welle-mount #site_alarm_slidemenu_container,
+html.welle-mount .alpha_instagram_feed { display: none !important; }
+#welle-root { visibility: hidden; }
+html.welle-mount body { margin: 0 !important; padding: 0 !important; font: 400 14px/1.75 var(--sans) !important; color: var(--ink-soft) !important; letter-spacing: -0.01em !important; word-break: keep-all !important; }
+html.welle-mount:not(.no-scroll) body { background: var(--paper) !important; }
+html.welle-mount.no-scroll body { background: transparent !important; }
+/* 디자인 파일이 다 불러와질 때까지 잠깐 가려 둠 (깨진 화면이 비치지 않게) */
+html.welle-wait body > .site-header, html.welle-wait body > .header-space, html.welle-wait body > main,
+html.welle-wait body > .site-footer, html.welle-wait body > .toast { visibility: hidden !important; }

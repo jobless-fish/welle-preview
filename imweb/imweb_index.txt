@@ -1,5 +1,5 @@
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&family=Noto+Serif+KR:wght@400;500&family=Domine:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jobless-fish/welle-preview@5b1c65c0db07/assets/css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jobless-fish/welle-preview@3d681baf4a3f/assets/css/style.css">
 <style>
 /* 아임웹 기본 화면 숨기기 (우리 화면이 올라간 페이지에서만) */
 html.welle-mount #doz_header_wrap,
@@ -23,7 +23,7 @@ if(sessionStorage.getItem('welleSeamless')){sessionStorage.removeItem('welleSeam
 <div id="welle-root">
 <header class="site-header">
   <div class="site-header__inner">
-    <a class="logo" href="#" aria-label="Welle Fotografien 홈"><img src="https://cdn.jsdelivr.net/gh/jobless-fish/welle-preview@5b1c65c0db07/assets/img/logo.svg" alt="Welle Fotografien" width="860" height="510"></a>
+    <a class="logo" href="#" aria-label="Welle Fotografien 홈"><img src="https://cdn.jsdelivr.net/gh/jobless-fish/welle-preview@3d681baf4a3f/assets/img/logo.svg" alt="Welle Fotografien" width="860" height="510"></a>
     <nav class="nav" aria-label="주 메뉴"><a href="#" aria-current="page">Home</a><a href="https://jobless-fish.github.io/welle-preview/gallery.html">Gallery</a><a href="https://jobless-fish.github.io/welle-preview/product.html">Product</a><a href="https://jobless-fish.github.io/welle-preview/reservation.html">Reservation</a></nav>
   </div>
 </header>
@@ -76,7 +76,7 @@ if(sessionStorage.getItem('welleSeamless')){sessionStorage.removeItem('welleSeam
   while (R.firstChild) frag.appendChild(R.firstChild);
   B.insertBefore(frag, B.firstChild);
   R.parentNode.removeChild(R);
-  var s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/gh/jobless-fish/welle-preview@5b1c65c0db07/assets/js/site.js'; B.appendChild(s);
+  var s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/gh/jobless-fish/welle-preview@3d681baf4a3f/assets/js/site.js'; B.appendChild(s);
 })();
 </script>
 

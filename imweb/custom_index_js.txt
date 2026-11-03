@@ -1,0 +1,37 @@
+/* Welle 화면 불러오기: 아임웹 틀 밖(body 바로 아래)으로 옮긴 뒤, 디자인·동작 파일을 순서대로 불러옴 */
+(function () {
+  var CDN = 'https://cdn.jsdelivr.net/gh/jobless-fish/welle-preview@3d681baf4a3f/';
+  var H = document.documentElement, B = document.body;
+  function boot() {
+    var R = document.getElementById('welle-root');
+    if (!R || H.classList.contains('welle-mount')) return;
+    H.classList.add('welle-mount', 'welle-wait');
+    B.classList.add('home');
+    try {
+      var w = sessionStorage.getItem('welleWater');
+      if (w) { sessionStorage.removeItem('welleWater'); w = JSON.parse(w);
+        H.style.setProperty('--wx', (w.x * 100).toFixed(1) + '%'); H.style.setProperty('--wy', ((1 - w.y) * 100).toFixed(1) + '%');
+        H.classList.add('page-fade'); setTimeout(function () { H.classList.remove('page-fade'); }, 2000); }
+      if (sessionStorage.getItem('welleSeamless')) { sessionStorage.removeItem('welleSeamless'); H.classList.add('seamless');
+        setTimeout(function () { H.classList.remove('seamless'); }, 1500); }
+    } catch (e) {}
+    var f = document.createDocumentFragment();
+    while (R.firstChild) f.appendChild(R.firstChild);
+    B.insertBefore(f, B.firstChild);
+    R.parentNode.removeChild(R);
+    var waiting = 2;
+    function done() { if (--waiting <= 0) H.classList.remove('welle-wait'); }
+    setTimeout(function () { H.classList.remove('welle-wait'); }, 6000);   // 무슨 일이 있어도 6초 뒤엔 보이게
+    var lf = document.createElement('link'); lf.rel = 'stylesheet'; lf.href = 'https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&family=Noto+Serif+KR:wght@400;500&family=Domine:wght@400;500&display=swap'; document.head.appendChild(lf);
+    var lc = document.createElement('link'); lc.rel = 'stylesheet'; lc.href = CDN + 'assets/css/style.css';
+    lc.onload = lc.onerror = done; document.head.appendChild(lc);
+    var list = ['https://cdn.jsdelivr.net/gh/jobless-fish/welle-preview@3d681baf4a3f/assets/js/intro.js', 'https://cdn.jsdelivr.net/gh/jobless-fish/welle-preview@3d681baf4a3f/assets/js/site.js'];
+    (function next(i) {
+      if (i >= list.length) return;
+      var s = document.createElement('script'); s.src = list[i];
+      s.onload = s.onerror = function () { if (i === 0) done(); next(i + 1); };
+      B.appendChild(s);
+    })(0);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
