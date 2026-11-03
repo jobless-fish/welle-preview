@@ -32,6 +32,10 @@ html.welle-mount body > .section_wrap,
 html.welle-mount #site_alarm_slidemenu_container,
 html.welle-mount .alpha_instagram_feed { display: none !important; }
 html.welle-mount body { margin: 0 !important; padding: 0 !important; }
+/* 아임웹 기본 글꼴·글자 간격이 우리 화면에 섞이지 않게 */
+html.welle-mount body { font: 400 14px/1.75 var(--sans) !important; color: var(--ink-soft) !important; letter-spacing: -0.01em !important; word-break: keep-all !important; }
+html.welle-mount:not(.no-scroll) body { background: var(--paper) !important; }
+html.welle-mount.no-scroll body { background: transparent !important; }
 </style>"""
 
 
